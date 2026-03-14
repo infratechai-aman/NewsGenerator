@@ -21,7 +21,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Bharat Digital Publisher — Premium Newspaper Generator",
+  title: "Press Management Suite",
   description:
     "Generate fully formatted, multi-page, multilingual Indian-style newspapers in PDF format with AI-powered content and professional layouts.",
 };

@@ -13,7 +13,7 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/25">
               <Newspaper className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-[#0f172a] tracking-tight">Bharat Digital</span>
+            <span className="text-xl font-extrabold text-[#0f172a] tracking-tight">Press Management Suite</span>
           </div>
 
           <div className="hidden md:flex items-center justify-center gap-10 w-1/2">
@@ -107,7 +107,7 @@ export default function LandingPage() {
                     <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
                   </div>
                   <div className="mx-auto bg-white border border-slate-200 rounded-md px-24 py-1 text-[10px] text-slate-400 font-bold tracking-widest uppercase">
-                    BharatDigital.com/admin
+                    PressManagementSuite.com/admin
                   </div>
                 </div>
                 <div className="flex flex-1">
@@ -186,7 +186,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-sm font-bold text-blue-600 tracking-widest uppercase mb-3">The Workflow</h2>
-            <h3 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>How Bharat Digital Works</h3>
+            <h3 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>How Press Management Suite Works</h3>
           </div>
 
           <div className="max-w-4xl mx-auto bg-white rounded-[2rem] p-10 lg:p-16 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-slate-100 relative">
@@ -195,7 +195,8 @@ export default function LandingPage() {
             <div className="absolute bottom-8 right-8 text-8xl text-blue-50 font-serif leading-none select-none pointer-events-none rotate-180">"</div>
             
             <p className="text-lg lg:text-xl text-slate-600 leading-[1.8] font-medium text-center relative z-10">
-              <strong className="text-slate-900 font-bold">Bharat Digital</strong> simplifies the entire newsletter and broadsheet creation process into a seamlessly integrated, intelligent workflow designed specifically for busy publishers. Instead of wrestling with indesign templates, copy-pasting news, and struggling with formatting, our platform allows you to effortlessly select your specific Target Location and News Count in seconds. Once your parameters are set, our <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">advanced AI takes over</span> — automatically fetching live news, designing quotes, tracking weather, and writing horoscopes. Finally, with a single drag-and-drop builder, your custom-tailored, professional publication is instantly exported as a <span className="text-indigo-600 font-bold border-b-2 border-indigo-200">perfectly aligned, print-ready PDF</span>. This completely eliminates manual typography and formatting, saving you countless hours of labor and letting you focus on what truly matters: delivering the news.
+              <strong className="text-slate-900 font-bold">Press Management Suite</strong> simplifies the entire newsletter and broadsheet creation process into a seamlessly integrated, intelligent workflow designed specifically for busy publishers. Instead of wrestling with indesign templates, copy-pasting news, and struggling with formatting, our platform allows you to effortlessly select your specific Target Location and News Count in seconds. Once your parameters are set, our <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">advanced AI takes over</span> — automatically fetching live news, designing quotes, tracking weather, and writing horoscopes. Finally, with a single drag-and-drop builder, your custom-tailored, professional publication is instantly exported as a <span className="text-indigo-600 font-bold border-b-2 border-indigo-200">perfectly aligned, print-ready PDF</span>. This completely eliminates manual typography and formatting, saving you countless hours of labor and letting you focus on what truly matters: delivering the news.
+.
             </p>
           </div>
         </div>
@@ -445,7 +446,7 @@ export default function LandingPage() {
           <h2 className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-8" style={{ fontFamily: 'var(--font-playfair)'}}>
             Ready to reclaim your publishing weekends?
           </h2>
-          <p className="text-slate-300 text-lg md:text-xl font-medium mb-12 max-w-2xl mx-auto leading-relaxed">Join the hundreds of local newspapers who use Bharat Digital to cut formatting time down to zero.</p>
+          <p className="text-slate-300 text-lg md:text-xl font-medium mb-12 max-w-2xl mx-auto leading-relaxed">Join the hundreds of local newspapers who use Press Management Suite to cut formatting time down to zero.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/admin">
               <button className="flex items-center justify-center w-full sm:w-auto text-lg font-bold text-slate-900 bg-white hover:bg-slate-50 px-10 py-5 rounded-2xl transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] hover:-translate-y-1">
@@ -470,7 +471,7 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md">
                   <Newspaper className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-xl font-extrabold text-slate-900 tracking-tight">Bharat Digital</span>
+                <span className="text-xl font-extrabold text-slate-900 tracking-tight">Press Management Suite</span>
               </div>
               <p className="text-base text-slate-500 leading-[1.8] font-medium max-w-sm">
                 Empowering Indian publishers with AI-driven tools for better news, faster layouts, and smarter automation. Let's build the future of print.
@@ -515,7 +516,7 @@ export default function LandingPage() {
 
           <div className="border-t border-slate-200 pt-8 flex flex-col items-center justify-center text-center">
             <p className="text-sm text-slate-400 font-medium">
-              © 2026 Bharat Digital Publisher. All rights reserved. Built for the Modern Indian Classroom... wait, Newsroom.
+              © 2026 Press Management Suite. All rights reserved. Built for the Modern Indian Classroom... wait, Newsroom.
             </p>
           </div>
         </div>
