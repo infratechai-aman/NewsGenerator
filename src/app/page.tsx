@@ -10,8 +10,8 @@ export default function LandingPage() {
       <nav className="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 w-1/4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <Newspaper className="h-5 w-5 text-white" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Press Management Suite</span>
           </div>
@@ -121,7 +121,7 @@ export default function LandingPage() {
                     <div className="bg-white h-full rounded-xl shadow-sm border border-slate-200 p-4 flex gap-4">
                       <div className="w-1/3 flex flex-col gap-2">
                          <div className="h-24 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-center">
-                            <Newspaper className="h-6 w-6 text-blue-300" />
+                             <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
                          </div>
                          <div className="h-16 bg-emerald-50 rounded-lg border border-emerald-100"></div>
                          <div className="h-16 bg-amber-50 rounded-lg border border-amber-100"></div>
@@ -468,8 +468,8 @@ export default function LandingPage() {
             
             <div className="md:col-span-5 pr-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md">
-                  <Newspaper className="h-5 w-5 text-white" />
+                <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-md">
+                  <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-xl font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Press Management Suite</span>
               </div>

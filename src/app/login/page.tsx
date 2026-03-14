@@ -35,8 +35,8 @@ export default function LoginPage() {
       
       <div className="w-full max-w-md relative z-10">
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-xl shadow-blue-500/25">
-             <Newspaper className="h-8 w-8 text-white" />
+          <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center shadow-xl shadow-blue-500/25">
+             <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
           </div>
         </div>
 

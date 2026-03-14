@@ -73,8 +73,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         
         {/* Brand Header */}
         <div className="h-20 flex items-center px-6 border-b border-white/5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 mr-3">
-            <Newspaper className="h-4 w-4 text-white" />
+          <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shadow-lg shadow-blue-500/20 mr-3">
+            <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-[15px] font-bold tracking-tight leading-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Press Management Suite</h1>
