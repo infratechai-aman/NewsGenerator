@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Newspaper, ChevronRight, PenTool, Layout, Globe, Wand2, FileOutput, ArrowRight, PlayCircle, Star, Zap, ShieldCheck } from 'lucide-react';
 
@@ -11,7 +11,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 w-1/4">
             <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Press Management Suite</span>
           </div>
@@ -181,7 +181,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* How It Works â€” Premium Step Cards */}
+      {/* How It Works —” Premium Step Cards */}
       <section id="how-it-works" className="py-32 bg-gradient-to-b from-[#f8faff] via-white to-[#f0f4ff] relative overflow-hidden">
         <div className="absolute top-20 left-10 w-[400px] h-[400px] bg-blue-400/[0.07] rounded-full blur-[100px] pointer-events-none"></div>
         <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-indigo-500/[0.07] rounded-full blur-[100px] pointer-events-none"></div>
@@ -192,7 +192,7 @@ export default function LandingPage() {
               The Workflow
             </div>
             <h3 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Three Steps to Print Perfection</h3>
-            <p className="mt-5 text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">From raw parameters to a finished broadsheet PDF â€” fully automated, zero manual effort.</p>
+            <p className="mt-5 text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">From raw parameters to a finished broadsheet PDF — fully automated, zero manual effort.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 max-w-5xl mx-auto relative">
             <div className="hidden md:block absolute top-[72px] left-[16.67%] right-[16.67%] h-[3px] bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 rounded-full z-0"></div>
@@ -202,7 +202,7 @@ export default function LandingPage() {
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-[3px] border-white flex items-center justify-center shadow-md"><Zap className="w-3 h-3 text-white" /></div>
               </div>
               <h4 className="text-xl font-extrabold text-slate-900 mb-3">Configure & Target</h4>
-              <p className="text-slate-500 font-medium leading-relaxed text-[15px]">Select your city, language, news count, and publication date. Set your parameters in seconds â€” the AI handles the rest.</p>
+              <p className="text-slate-500 font-medium leading-relaxed text-[15px]">Select your city, language, news count, and publication date. Set your parameters in seconds — the AI handles the rest.</p>
             </div>
             <div className="relative z-10 flex flex-col items-center text-center px-6 group mt-10 md:mt-0">
               <div className="w-[88px] h-[88px] rounded-3xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-[0_8px_30px_rgba(99,102,241,0.35)] mb-8 group-hover:scale-110 group-hover:shadow-[0_12px_40px_rgba(99,102,241,0.5)] transition-all duration-500 relative">
@@ -223,13 +223,13 @@ export default function LandingPage() {
           </div>
           <div className="max-w-3xl mx-auto mt-20 bg-white/70 backdrop-blur-xl rounded-2xl p-8 border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-center">
             <p className="text-slate-600 font-medium leading-relaxed text-[15px]">
-              <strong className="text-slate-900">Press Management Suite</strong> eliminates manual typography and formatting completely â€” saving you <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-extrabold">18+ hours per publication cycle</span>. Focus on what truly matters: delivering the news.
+              <strong className="text-slate-900 font-bold">Press Management Suite</strong> simplifies the entire newsletter and broadsheet creation process into a seamlessly integrated, intelligent workflow designed specifically for busy publishers. Instead of wrestling with indesign templates, copy-pasting news, and struggling with formatting, our platform allows you to effortlessly select your specific Target Location and News Count in seconds. Once your parameters are set, our <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">advanced AI takes over</span> — automatically fetching live news, designing quotes, tracking weather, and writing horoscopes. Finally, with a single drag-and-drop builder, your custom-tailored, professional publication is instantly exported as a <span className="text-indigo-600 font-bold border-b-2 border-indigo-200">perfectly aligned, print-ready PDF</span>. This completely eliminates manual typography and formatting, saving you countless hours of labor and letting you focus on what truly matters: delivering the news.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Features â€” Premium Dark Bento Grid */}
+      {/* Features — Premium Dark Bento Grid */}
       <section id="features" className="py-32 bg-[#0f172a] relative overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none"></div>
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -269,7 +269,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing â€” Premium Gradient */}
+      {/* Pricing — Premium Gradient */}
       <section id="pricing" className="py-32 bg-gradient-to-b from-[#f0f4ff] via-white to-[#f8faff] relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-400/[0.06] rounded-full blur-[120px] pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -285,9 +285,9 @@ export default function LandingPage() {
                 <div className="mb-6"><h3 className="text-2xl font-extrabold text-slate-900">Starter</h3><p className="text-slate-500 mt-2 font-medium">Perfect for testing the AI capabilities.</p></div>
                 <div className="mb-8 pb-8 border-b border-slate-100"><span className="text-5xl font-extrabold text-[#0f172a]">Free</span></div>
                 <ul className="space-y-5 flex-1 mb-10">
-                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">âœ“</span></div>3 Generations a month</li>
-                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">âœ“</span></div>Standard Templates</li>
-                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">âœ“</span></div>Community Support</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">✓</span></div>3 Generations a month</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">✓</span></div>Standard Templates</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">✓</span></div>Community Support</li>
                 </ul>
                 <Link href="/admin"><button className="w-full py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all">Get Started</button></Link>
               </div>
@@ -298,11 +298,11 @@ export default function LandingPage() {
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-[0_4px_15px_rgba(59,130,246,0.4)]">Most Popular</div>
               <div className="relative z-10 flex flex-col flex-1">
                 <div className="mb-6"><h3 className="text-2xl font-extrabold text-white">Scale</h3><p className="text-slate-400 mt-2 font-medium">For growing local weekly publications.</p></div>
-                <div className="mb-8 pb-8 border-b border-white/10"><div className="flex items-end gap-2"><span className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">â‚¹5,000</span><span className="text-slate-400 font-medium pb-2">/year</span></div></div>
+                <div className="mb-8 pb-8 border-b border-white/10"><div className="flex items-end gap-2"><span className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">₹5,000</span><span className="text-slate-400 font-medium pb-2">/year</span></div></div>
                 <ul className="space-y-5 flex-1 mb-10">
-                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">âœ“</span></div>30 Generations a month</li>
-                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">âœ“</span></div>Custom AI Targeting</li>
-                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">âœ“</span></div>Priority Email Support</li>
+                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">✓</span></div>30 Generations a month</li>
+                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">✓</span></div>Custom AI Targeting</li>
+                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">✓</span></div>Priority Email Support</li>
                 </ul>
                 <Link href="/admin"><button className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all hover:-translate-y-0.5">Upgrade to Scale</button></Link>
               </div>
@@ -311,11 +311,11 @@ export default function LandingPage() {
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
               <div className="relative z-10 flex flex-col flex-1">
                 <div className="mb-6"><h3 className="text-2xl font-extrabold text-slate-900">Pro</h3><p className="text-slate-500 mt-2 font-medium">For daily publishers reaching millions.</p></div>
-                <div className="mb-8 pb-8 border-b border-slate-100"><div className="flex items-end gap-2"><span className="text-5xl font-extrabold text-[#0f172a]">â‚¹9,000</span><span className="text-slate-500 font-medium pb-2">/year</span></div></div>
+                <div className="mb-8 pb-8 border-b border-slate-100"><div className="flex items-end gap-2"><span className="text-5xl font-extrabold text-[#0f172a]">₹9,000</span><span className="text-slate-500 font-medium pb-2">/year</span></div></div>
                 <ul className="space-y-5 flex-1 mb-10">
-                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">âœ“</span></div>90 Generations a month</li>
-                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">âœ“</span></div>Custom Watermarks & Ads</li>
-                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">âœ“</span></div>24/7 Dedicated Support</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">✓</span></div>90 Generations a month</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">✓</span></div>Custom Watermarks & Ads</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">✓</span></div>24/7 Dedicated Support</li>
                 </ul>
                 <Link href="/admin"><button className="w-full py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all">Upgrade to Pro</button></Link>
               </div>
@@ -324,7 +324,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Why Us â€” Premium Gradient Cards */}
+      {/* Why Us —” Premium Gradient Cards */}
       <section id="support" className="py-32 bg-[#0f172a] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -381,7 +381,7 @@ export default function LandingPage() {
               Contact Sales
             </button>
           </div>
-          <p className="mt-8 text-sm text-slate-500 font-medium tracking-wide font-sans">NO CREDIT CARD REQUIRED â€¢ CANCEL ANYTIME</p>
+          <p className="mt-8 text-sm text-slate-500 font-medium tracking-wide font-sans">NO CREDIT CARD REQUIRED —¢ CANCEL ANYTIME</p>
         </div>
       </section>
 

@@ -35,8 +35,8 @@ export default function LoginPage() {
       
       <div className="w-full max-w-md relative z-10">
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center shadow-xl shadow-blue-500/25">
-             <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-cover" />
+          <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center shadow-2xl shadow-blue-500/20 mb-6 mx-auto transform hover:rotate-12 transition-transform duration-500">
+             <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
         </div>
 
