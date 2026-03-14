@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import Link from 'next/link';
 import { Newspaper, ChevronRight, PenTool, Layout, Globe, Wand2, FileOutput, ArrowRight, PlayCircle, Star, Zap, ShieldCheck } from 'lucide-react';
 
@@ -181,259 +181,183 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* How It Works (ScorePrepPro Style) */}
-      <section id="how-it-works" className="py-32 bg-slate-50 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-sm font-bold text-blue-600 tracking-widest uppercase mb-3">The Workflow</h2>
-            <h3 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>How Press Management Suite Works</h3>
+      {/* How It Works â€” Premium Step Cards */}
+      <section id="how-it-works" className="py-32 bg-gradient-to-b from-[#f8faff] via-white to-[#f0f4ff] relative overflow-hidden">
+        <div className="absolute top-20 left-10 w-[400px] h-[400px] bg-blue-400/[0.07] rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-indigo-500/[0.07] rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100/80 text-blue-700 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm">
+              <PenTool className="h-3.5 w-3.5" />
+              The Workflow
+            </div>
+            <h3 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Three Steps to Print Perfection</h3>
+            <p className="mt-5 text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">From raw parameters to a finished broadsheet PDF â€” fully automated, zero manual effort.</p>
           </div>
-
-          <div className="max-w-4xl mx-auto bg-white rounded-[2rem] p-10 lg:p-16 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-slate-100 relative">
-            {/* Huge decorative quotes */}
-            <div className="absolute top-8 left-8 text-8xl text-blue-50 font-serif leading-none select-none pointer-events-none">"</div>
-            <div className="absolute bottom-8 right-8 text-8xl text-blue-50 font-serif leading-none select-none pointer-events-none rotate-180">"</div>
-            
-            <p className="text-lg lg:text-xl text-slate-600 leading-[1.8] font-medium text-center relative z-10">
-              <strong className="text-slate-900 font-bold">Press Management Suite</strong> simplifies the entire newsletter and broadsheet creation process into a seamlessly integrated, intelligent workflow designed specifically for busy publishers. Instead of wrestling with indesign templates, copy-pasting news, and struggling with formatting, our platform allows you to effortlessly select your specific Target Location and News Count in seconds. Once your parameters are set, our <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">advanced AI takes over</span> — automatically fetching live news, designing quotes, tracking weather, and writing horoscopes. Finally, with a single drag-and-drop builder, your custom-tailored, professional publication is instantly exported as a <span className="text-indigo-600 font-bold border-b-2 border-indigo-200">perfectly aligned, print-ready PDF</span>. This completely eliminates manual typography and formatting, saving you countless hours of labor and letting you focus on what truly matters: delivering the news.
-.
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 max-w-5xl mx-auto relative">
+            <div className="hidden md:block absolute top-[72px] left-[16.67%] right-[16.67%] h-[3px] bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 rounded-full z-0"></div>
+            <div className="relative z-10 flex flex-col items-center text-center px-6 group">
+              <div className="w-[88px] h-[88px] rounded-3xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-[0_8px_30px_rgba(59,130,246,0.35)] mb-8 group-hover:scale-110 group-hover:shadow-[0_12px_40px_rgba(59,130,246,0.5)] transition-all duration-500 relative">
+                <span className="text-white text-3xl font-extrabold">1</span>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-[3px] border-white flex items-center justify-center shadow-md"><Zap className="w-3 h-3 text-white" /></div>
+              </div>
+              <h4 className="text-xl font-extrabold text-slate-900 mb-3">Configure & Target</h4>
+              <p className="text-slate-500 font-medium leading-relaxed text-[15px]">Select your city, language, news count, and publication date. Set your parameters in seconds â€” the AI handles the rest.</p>
+            </div>
+            <div className="relative z-10 flex flex-col items-center text-center px-6 group mt-10 md:mt-0">
+              <div className="w-[88px] h-[88px] rounded-3xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-[0_8px_30px_rgba(99,102,241,0.35)] mb-8 group-hover:scale-110 group-hover:shadow-[0_12px_40px_rgba(99,102,241,0.5)] transition-all duration-500 relative">
+                <span className="text-white text-3xl font-extrabold">2</span>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400 border-[3px] border-white flex items-center justify-center shadow-md"><Wand2 className="w-3 h-3 text-white" /></div>
+              </div>
+              <h4 className="text-xl font-extrabold text-slate-900 mb-3">AI Generates Everything</h4>
+              <p className="text-slate-500 font-medium leading-relaxed text-[15px]">Our engine auto-fetches live news, creates quotes, tracks weather, writes horoscopes, and composes professional articles.</p>
+            </div>
+            <div className="relative z-10 flex flex-col items-center text-center px-6 group mt-10 md:mt-0">
+              <div className="w-[88px] h-[88px] rounded-3xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-[0_8px_30px_rgba(139,92,246,0.35)] mb-8 group-hover:scale-110 group-hover:shadow-[0_12px_40px_rgba(139,92,246,0.5)] transition-all duration-500 relative">
+                <span className="text-white text-3xl font-extrabold">3</span>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-rose-400 border-[3px] border-white flex items-center justify-center shadow-md"><FileOutput className="w-3 h-3 text-white" /></div>
+              </div>
+              <h4 className="text-xl font-extrabold text-slate-900 mb-3">Export Print-Ready PDF</h4>
+              <p className="text-slate-500 font-medium leading-relaxed text-[15px]">Drag-and-drop your page layout, then export a perfectly aligned, multi-page broadsheet PDF in one click.</p>
+            </div>
+          </div>
+          <div className="max-w-3xl mx-auto mt-20 bg-white/70 backdrop-blur-xl rounded-2xl p-8 border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-center">
+            <p className="text-slate-600 font-medium leading-relaxed text-[15px]">
+              <strong className="text-slate-900">Press Management Suite</strong> eliminates manual typography and formatting completely â€” saving you <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 font-extrabold">18+ hours per publication cycle</span>. Focus on what truly matters: delivering the news.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* Features â€” Premium Dark Bento Grid */}
+      <section id="features" className="py-32 bg-[#0f172a] relative overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none"></div>
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-20 max-w-3xl mx-auto">
-            <h2 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] mb-6 tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Enterprise-Grade Features</h2>
-            <p className="text-lg text-slate-500 font-medium leading-relaxed">Everything you need to launch a high-end digital publication, combining aesthetic perfection with autonomous AI workflows.</p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6"><Zap className="h-3.5 w-3.5" /> Core Capabilities</div>
+            <h2 className="text-4xl lg:text-5xl font-extrabold text-white mb-6 tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Enterprise-Grade Features</h2>
+            <p className="text-lg text-slate-400 font-medium leading-relaxed">Everything you need to launch a high-end digital publication, combining aesthetic perfection with autonomous AI workflows.</p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            
-            <div className="p-8 rounded-[2rem] bg-gradient-to-b from-slate-50 to-white border border-slate-200 hover:border-blue-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                <Zap className="h-6 w-6 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4 block">Auto-Pilot AI Engine</h3>
-              <p className="text-slate-500 leading-relaxed font-medium">
-                Connect your OpenAI credentials securely on the backend. Generate highly localized News, Weather, TV Guides, and Horoscopes instantly.
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-blue-600/20 via-indigo-600/10 to-transparent border border-white/10 hover:border-blue-500/30 transition-all duration-500 group relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-blue-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-blue-500/20 transition-all duration-500"></div>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mb-8 shadow-[0_8px_25px_rgba(59,130,246,0.3)] group-hover:shadow-[0_8px_35px_rgba(59,130,246,0.5)] group-hover:scale-105 transition-all duration-500"><Zap className="h-7 w-7 text-white" /></div>
+              <h3 className="text-2xl font-extrabold text-white mb-4">Auto-Pilot AI Engine</h3>
+              <p className="text-slate-400 leading-relaxed font-medium text-[15px]">Connect your OpenAI credentials securely. Generate highly localized News, Weather, TV Guides, and Horoscopes instantly.</p>
             </div>
-
-            <div className="p-8 rounded-[2rem] bg-gradient-to-b from-slate-50 to-white border border-slate-200 hover:border-indigo-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                <Layout className="h-6 w-6 text-indigo-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4 block">Authentic Typography</h3>
-              <p className="text-slate-500 leading-relaxed font-medium">
-                Engineered to perfectly match the dense, multi-column Indian aesthetic with strict serif fonts and classic UnifrakturMaguntia headers.
-              </p>
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-indigo-600/20 via-violet-600/10 to-transparent border border-white/10 hover:border-indigo-500/30 transition-all duration-500 group relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-500"></div>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-700 flex items-center justify-center mb-8 shadow-[0_8px_25px_rgba(99,102,241,0.3)] group-hover:shadow-[0_8px_35px_rgba(99,102,241,0.5)] group-hover:scale-105 transition-all duration-500"><Layout className="h-7 w-7 text-white" /></div>
+              <h3 className="text-2xl font-extrabold text-white mb-4">Authentic Typography</h3>
+              <p className="text-slate-400 leading-relaxed font-medium text-[15px]">Engineered to match the dense, multi-column Indian aesthetic with strict serif fonts and classic UnifrakturMaguntia headers.</p>
             </div>
-
-            <div className="p-8 rounded-[2rem] bg-gradient-to-b from-slate-50 to-white border border-slate-200 hover:border-emerald-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                <FileOutput className="h-6 w-6 text-emerald-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4 block">Flawless Rendering</h3>
-              <p className="text-slate-500 leading-relaxed font-medium">
-                A highly-tuned Puppeteer engine guarantees that content perfectly wraps across pages. Built-in break-inside avoidance technology.
-              </p>
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-emerald-600/20 via-teal-600/10 to-transparent border border-white/10 hover:border-emerald-500/30 transition-all duration-500 group relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-emerald-500/20 transition-all duration-500"></div>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center mb-8 shadow-[0_8px_25px_rgba(16,185,129,0.3)] group-hover:shadow-[0_8px_35px_rgba(16,185,129,0.5)] group-hover:scale-105 transition-all duration-500"><FileOutput className="h-7 w-7 text-white" /></div>
+              <h3 className="text-2xl font-extrabold text-white mb-4">Flawless Rendering</h3>
+              <p className="text-slate-400 leading-relaxed font-medium text-[15px]">A highly-tuned Puppeteer engine guarantees that content perfectly wraps across pages. Built-in break-inside avoidance technology.</p>
             </div>
-
-            <div className="p-8 rounded-[2rem] bg-gradient-to-b from-slate-50 to-white border border-slate-200 hover:border-amber-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                <Globe className="h-6 w-6 text-amber-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4 block">Hyper-Local Targets</h3>
-              <p className="text-slate-500 leading-relaxed font-medium">
-                Scrape realtime news and API vectors mapped precisely to the cities and regions you care about. Real news, real weather.
-              </p>
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-amber-600/20 via-orange-600/10 to-transparent border border-white/10 hover:border-amber-500/30 transition-all duration-500 group relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-amber-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-amber-500/20 transition-all duration-500"></div>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-700 flex items-center justify-center mb-8 shadow-[0_8px_25px_rgba(245,158,11,0.3)] group-hover:shadow-[0_8px_35px_rgba(245,158,11,0.5)] group-hover:scale-105 transition-all duration-500"><Globe className="h-7 w-7 text-white" /></div>
+              <h3 className="text-2xl font-extrabold text-white mb-4">Hyper-Local Targets</h3>
+              <p className="text-slate-400 leading-relaxed font-medium text-[15px]">Scrape realtime news and API vectors mapped precisely to the cities and regions you care about. Real news, real weather.</p>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-32 bg-[#fafcff] border-t border-slate-200/60 relative">
-        <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-slate-100/50 to-transparent pointer-events-none"></div>
+      {/* Pricing â€” Premium Gradient */}
+      <section id="pricing" className="py-32 bg-gradient-to-b from-[#f0f4ff] via-white to-[#f8faff] relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-400/[0.06] rounded-full blur-[120px] pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100/80 text-blue-700 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm"><Star className="h-3.5 w-3.5 fill-blue-600" /> Plans</div>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] mb-6 tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Transparent Pricing</h2>
-            <p className="text-lg text-slate-500 font-medium">Simple, predictable pricing that scales with your digital publication needs.</p>
+            <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Simple, predictable pricing that scales with your digital publication needs.</p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
-            {/* Free */}
-            <div className="bg-white rounded-[2rem] p-10 border border-slate-200 flex flex-col hover:border-blue-200 hover:shadow-xl transition-all relative">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-slate-900">Starter</h3>
-                <p className="text-slate-500 mt-2 font-medium">Perfect for testing the AI capabilities.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-10 border border-slate-200/80 flex flex-col hover:border-blue-300 hover:shadow-[0_20px_50px_-15px_rgba(59,130,246,0.15)] transition-all duration-500 relative group">
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+              <div className="relative z-10 flex flex-col flex-1">
+                <div className="mb-6"><h3 className="text-2xl font-extrabold text-slate-900">Starter</h3><p className="text-slate-500 mt-2 font-medium">Perfect for testing the AI capabilities.</p></div>
+                <div className="mb-8 pb-8 border-b border-slate-100"><span className="text-5xl font-extrabold text-[#0f172a]">Free</span></div>
+                <ul className="space-y-5 flex-1 mb-10">
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">âœ“</span></div>3 Generations a month</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">âœ“</span></div>Standard Templates</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-600 text-xs font-bold">âœ“</span></div>Community Support</li>
+                </ul>
+                <Link href="/admin"><button className="w-full py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all">Get Started</button></Link>
               </div>
-              <div className="mb-8 pb-8 border-b border-slate-100">
-                <span className="text-5xl font-extrabold text-[#0f172a]">Free</span>
-              </div>
-              <ul className="space-y-5 flex-1 mb-10">
-                <li className="flex items-center text-slate-600 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-600 text-xs font-bold">✓</span>
-                  </div>
-                  3 Generations a month
-                </li>
-                <li className="flex items-center text-slate-600 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-600 text-xs font-bold">✓</span>
-                  </div>
-                  Standard Templates
-                </li>
-                <li className="flex items-center text-slate-600 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-600 text-xs font-bold">✓</span>
-                  </div>
-                  Community Support
-                </li>
-              </ul>
-              <Link href="/admin">
-                <button className="w-full py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors">
-                  Get Started
-                </button>
-              </Link>
             </div>
-
-            {/* Scale */}
-            <div className="bg-[#0f172a] rounded-[2rem] p-10 flex flex-col shadow-[0_20px_40px_-15px_rgba(15,23,42,0.4)] transform md:scale-105 relative z-10">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
-                Most Popular
+            <div className="bg-[#0f172a] rounded-3xl p-10 flex flex-col shadow-[0_25px_60px_-15px_rgba(15,23,42,0.5)] transform md:scale-105 relative z-10 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-indigo-600/10 pointer-events-none"></div>
+              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-[0_4px_15px_rgba(59,130,246,0.4)]">Most Popular</div>
+              <div className="relative z-10 flex flex-col flex-1">
+                <div className="mb-6"><h3 className="text-2xl font-extrabold text-white">Scale</h3><p className="text-slate-400 mt-2 font-medium">For growing local weekly publications.</p></div>
+                <div className="mb-8 pb-8 border-b border-white/10"><div className="flex items-end gap-2"><span className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">â‚¹5,000</span><span className="text-slate-400 font-medium pb-2">/year</span></div></div>
+                <ul className="space-y-5 flex-1 mb-10">
+                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">âœ“</span></div>30 Generations a month</li>
+                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">âœ“</span></div>Custom AI Targeting</li>
+                  <li className="flex items-center text-slate-200 font-medium"><div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-blue-400 text-xs font-bold">âœ“</span></div>Priority Email Support</li>
+                </ul>
+                <Link href="/admin"><button className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all hover:-translate-y-0.5">Upgrade to Scale</button></Link>
               </div>
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-white">Scale</h3>
-                <p className="text-slate-400 mt-2 font-medium">For growing local weekly publications.</p>
-              </div>
-              <div className="mb-8 pb-8 border-b border-white/10">
-                <div className="flex items-end gap-2">
-                  <span className="text-5xl font-extrabold text-white">₹5,000</span>
-                  <span className="text-slate-400 font-medium pb-2">/year</span>
-                </div>
-              </div>
-              <ul className="space-y-5 flex-1 mb-10">
-                <li className="flex items-center text-slate-200 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-400 text-xs font-bold">✓</span>
-                  </div>
-                  30 Generations a month
-                </li>
-                <li className="flex items-center text-slate-200 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-400 text-xs font-bold">✓</span>
-                  </div>
-                  Custom AI Targeting
-                </li>
-                <li className="flex items-center text-slate-200 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-400 text-xs font-bold">✓</span>
-                  </div>
-                  Priority Email Support
-                </li>
-              </ul>
-              <Link href="/admin">
-                <button className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all">
-                  Upgrade to Scale
-                </button>
-              </Link>
             </div>
-
-            {/* Pro */}
-            <div className="bg-white rounded-[2rem] p-10 border border-slate-200 flex flex-col hover:border-blue-200 hover:shadow-xl transition-all relative">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold text-slate-900">Pro</h3>
-                <p className="text-slate-500 mt-2 font-medium">For daily publishers reaching millions.</p>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-10 border border-slate-200/80 flex flex-col hover:border-indigo-300 hover:shadow-[0_20px_50px_-15px_rgba(99,102,241,0.15)] transition-all duration-500 relative group">
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-indigo-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+              <div className="relative z-10 flex flex-col flex-1">
+                <div className="mb-6"><h3 className="text-2xl font-extrabold text-slate-900">Pro</h3><p className="text-slate-500 mt-2 font-medium">For daily publishers reaching millions.</p></div>
+                <div className="mb-8 pb-8 border-b border-slate-100"><div className="flex items-end gap-2"><span className="text-5xl font-extrabold text-[#0f172a]">â‚¹9,000</span><span className="text-slate-500 font-medium pb-2">/year</span></div></div>
+                <ul className="space-y-5 flex-1 mb-10">
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">âœ“</span></div>90 Generations a month</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">âœ“</span></div>Custom Watermarks & Ads</li>
+                  <li className="flex items-center text-slate-600 font-medium"><div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 flex items-center justify-center mr-4 flex-shrink-0"><span className="text-indigo-600 text-xs font-bold">âœ“</span></div>24/7 Dedicated Support</li>
+                </ul>
+                <Link href="/admin"><button className="w-full py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all">Upgrade to Pro</button></Link>
               </div>
-              <div className="mb-8 pb-8 border-b border-slate-100">
-                <div className="flex items-end gap-2">
-                  <span className="text-5xl font-extrabold text-[#0f172a]">₹9,000</span>
-                  <span className="text-slate-500 font-medium pb-2">/year</span>
-                </div>
-              </div>
-              <ul className="space-y-5 flex-1 mb-10">
-                <li className="flex items-center text-slate-600 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-600 text-xs font-bold">✓</span>
-                  </div>
-                  90 Generations a month
-                </li>
-                <li className="flex items-center text-slate-600 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-600 text-xs font-bold">✓</span>
-                  </div>
-                  Custom Watermarks & Ads
-                </li>
-                <li className="flex items-center text-slate-600 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-blue-600 text-xs font-bold">✓</span>
-                  </div>
-                  24/7 Dedicated Support
-                </li>
-              </ul>
-              <Link href="/admin">
-                <button className="w-full py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors">
-                  Upgrade to Pro
-                </button>
-              </Link>
             </div>
-            
           </div>
         </div>
       </section>
 
-      {/* Support / Why Us */}
-      <section id="support" className="py-32 bg-white border-t border-slate-100">
-        <div className="max-w-5xl mx-auto px-6">
+      {/* Why Us â€” Premium Gradient Cards */}
+      <section id="support" className="py-32 bg-[#0f172a] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"></div>
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-center mb-20 max-w-2xl mx-auto">
-            <h2 className="text-sm font-bold text-blue-600 tracking-widest uppercase mb-3">Publishing Power</h2>
-            <h2 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] mb-6 tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Why Teachers & Publishers Love Us</h2>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6"><ShieldCheck className="h-3.5 w-3.5" /> Publishing Power</div>
+            <h2 className="text-4xl lg:text-5xl font-extrabold text-white mb-6 tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Why Teachers & Publishers Love Us</h2>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-            <div className="p-10 bg-[#fafcff] rounded-[2rem] border border-slate-200 flex flex-col gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 font-extrabold text-xl">1</span>
-              </div>
-              <div>
-                <h4 className="font-extrabold text-xl text-slate-900 mb-3">Zero Typing Needed</h4>
-                <p className="text-slate-500 font-medium leading-[1.8]">Say goodbye to manual transcription. The AI pulls relevant source material and drafts print-ready broadsheet articles in exactly 60 seconds. Absolutely seamless automation.</p>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-blue-600/15 via-transparent to-transparent border border-white/10 hover:border-blue-500/30 transition-all duration-500 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-blue-500/10 rounded-full blur-[60px] pointer-events-none group-hover:bg-blue-500/20 transition-all duration-500"></div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mb-6 shadow-[0_8px_25px_rgba(59,130,246,0.3)] group-hover:scale-105 transition-all"><span className="text-white font-extrabold text-xl">1</span></div>
+              <h4 className="font-extrabold text-xl text-white mb-3">Zero Typing Needed</h4>
+              <p className="text-slate-400 font-medium leading-[1.8]">Say goodbye to manual transcription. The AI pulls relevant source material and drafts print-ready broadsheet articles in exactly 60 seconds.</p>
             </div>
-
-            <div className="p-10 bg-[#fafcff] rounded-[2rem] border border-slate-200 flex flex-col gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-emerald-600 font-extrabold text-xl">2</span>
-              </div>
-              <div>
-                <h4 className="font-extrabold text-xl text-slate-900 mb-3">Custom Branding</h4>
-                <p className="text-slate-500 font-medium leading-[1.8]">Deliver a premium professional look that represents your local news brand perfectly. Completely white-labeled output means you own the identity front-to-back.</p>
-              </div>
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-emerald-600/15 via-transparent to-transparent border border-white/10 hover:border-emerald-500/30 transition-all duration-500 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-emerald-500/10 rounded-full blur-[60px] pointer-events-none group-hover:bg-emerald-500/20 transition-all duration-500"></div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center mb-6 shadow-[0_8px_25px_rgba(16,185,129,0.3)] group-hover:scale-105 transition-all"><span className="text-white font-extrabold text-xl">2</span></div>
+              <h4 className="font-extrabold text-xl text-white mb-3">Custom Branding</h4>
+              <p className="text-slate-400 font-medium leading-[1.8]">Deliver a premium professional look that represents your local news brand perfectly. Completely white-labeled output means you own the identity.</p>
             </div>
-
-            <div className="p-10 bg-[#fafcff] rounded-[2rem] border border-slate-200 flex flex-col gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-indigo-600 font-extrabold text-xl">3</span>
-              </div>
-              <div>
-                <h4 className="font-extrabold text-xl text-slate-900 mb-3">In-house Ad Network</h4>
-                <p className="text-slate-500 font-medium leading-[1.8]">Upload and place custom graphical ad slots right inside the flow of the newspaper seamlessly, driving revenue effortlessly alongside content blocks.</p>
-              </div>
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-indigo-600/15 via-transparent to-transparent border border-white/10 hover:border-indigo-500/30 transition-all duration-500 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-indigo-500/10 rounded-full blur-[60px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-500"></div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center mb-6 shadow-[0_8px_25px_rgba(99,102,241,0.3)] group-hover:scale-105 transition-all"><span className="text-white font-extrabold text-xl">3</span></div>
+              <h4 className="font-extrabold text-xl text-white mb-3">In-house Ad Network</h4>
+              <p className="text-slate-400 font-medium leading-[1.8]">Upload and place custom graphical ad slots right inside the flow of the newspaper seamlessly, driving revenue effortlessly alongside content blocks.</p>
             </div>
-
-            <div className="p-10 bg-[#fafcff] rounded-[2rem] border border-slate-200 flex flex-col gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-amber-600 font-extrabold text-xl">4</span>
-              </div>
-              <div>
-                <h4 className="font-extrabold text-xl text-slate-900 mb-3">Dedicated Support</h4>
-                <p className="text-slate-500 font-medium leading-[1.8]">Our engineering support team is always available to help you configure custom templates, troubleshoot PDF scaling issues, and integrate your OpenAI keys securely.</p>
-              </div>
+            <div className="p-10 rounded-3xl bg-gradient-to-br from-amber-600/15 via-transparent to-transparent border border-white/10 hover:border-amber-500/30 transition-all duration-500 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-amber-500/10 rounded-full blur-[60px] pointer-events-none group-hover:bg-amber-500/20 transition-all duration-500"></div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center mb-6 shadow-[0_8px_25px_rgba(245,158,11,0.3)] group-hover:scale-105 transition-all"><span className="text-white font-extrabold text-xl">4</span></div>
+              <h4 className="font-extrabold text-xl text-white mb-3">Dedicated Support</h4>
+              <p className="text-slate-400 font-medium leading-[1.8]">Our engineering support team is always available to help you configure custom templates, troubleshoot PDF scaling issues, and integrate your keys securely.</p>
             </div>
           </div>
         </div>
@@ -457,7 +381,7 @@ export default function LandingPage() {
               Contact Sales
             </button>
           </div>
-          <p className="mt-8 text-sm text-slate-500 font-medium tracking-wide font-sans">NO CREDIT CARD REQUIRED • CANCEL ANYTIME</p>
+          <p className="mt-8 text-sm text-slate-500 font-medium tracking-wide font-sans">NO CREDIT CARD REQUIRED â€¢ CANCEL ANYTIME</p>
         </div>
       </section>
 
@@ -516,7 +440,7 @@ export default function LandingPage() {
 
           <div className="border-t border-slate-200 pt-8 flex flex-col items-center justify-center text-center">
             <p className="text-sm text-slate-400 font-medium">
-              © 2026 Press Management Suite. All rights reserved. Built for the Modern Indian Classroom... wait, Newsroom.
+              Â© 2026 Press Management Suite. All rights reserved. Built for the Modern Indian Classroom... wait, Newsroom.
             </p>
           </div>
         </div>
