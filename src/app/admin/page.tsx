@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
+import { subscribeToAuthChanges } from '@/lib/auth';
+import { User } from 'firebase/auth';
 import { 
   FileText, 
   Database, 
@@ -16,6 +18,14 @@ import {
 
 export default function AdminOverview() {
   const { publication, generatedContent, manualArticles } = useAppStore();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const totalGenerated = generatedContent.articles.length;
   const totalManual = manualArticles.length;
@@ -56,7 +66,7 @@ export default function AdminOverview() {
 
           <div>
             <h1 className="text-3xl font-extrabold text-[#111827] mb-2 tracking-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
-              Welcome back, Aman Talukdar!
+              Welcome back, {user?.email?.split('@')[0] || 'Admin'}!
             </h1>
             <p className="text-slate-500 font-medium">Here's your premium dashboard overview.</p>
           </div>

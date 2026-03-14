@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 import { buildNewspaperHTML } from '@/lib/newspaper-template';
+import { adminStorage } from '@/lib/firebase-admin';
 
 export const maxDuration = 60;
 
@@ -63,26 +64,28 @@ export async function POST(req: NextRequest) {
     // Convert Uint8Array to Buffer
     const buffer = Buffer.from(pdfBuffer);
 
-    // Ensure the output directory exists
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const outputDir = path.join(process.cwd(), 'public', 'outputs');
-    
-    try {
-      await fs.access(outputDir);
-    } catch {
-      await fs.mkdir(outputDir, { recursive: true });
-    }
-
-    // Save PDF to public folder
+    // Upload PDF to Firebase Storage
     const safeName = publication.name.replace(/[^a-zA-Z0-9-]/g, '_');
-    const filename = `${safeName}_${publication.date}_${Date.now()}.pdf`;
-    const filepath = path.join(outputDir, filename);
+    const filename = `newspapers/${safeName}_${publication.date}_${Date.now()}.pdf`;
     
-    await fs.writeFile(filepath, buffer);
+    // Get the bucket
+    const bucket = adminStorage.bucket();
+    const file = bucket.file(filename);
+
+    await file.save(buffer, {
+      metadata: {
+        contentType: 'application/pdf',
+      },
+    });
+
+    // Make the file publicly accessible
+    await file.makePublic();
+
+    // Get the public URL
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
 
     // Return the URL for the client to download
-    return NextResponse.json({ url: `/outputs/${filename}` }, { status: 200 });
+    return NextResponse.json({ url: publicUrl }, { status: 200 });
   } catch (error) {
     console.error('PDF rendering error:', error);
     if (browser) {

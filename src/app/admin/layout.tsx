@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Newspaper,
@@ -12,8 +12,11 @@ import {
   LogOut,
   Bell,
   Wand2,
+  Loader2,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import { subscribeToAuthChanges, signOut } from '@/lib/auth';
+import { User } from 'firebase/auth';
 
 const NAV_ITEMS = [
   { label: 'Overview', href: '/admin', icon: LayoutDashboard },
@@ -26,12 +29,42 @@ const NAV_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { generatedContent } = useAppStore();
+  
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((currentUser) => {
+      setUser(currentUser);
+      setLoadingConfig(false);
+      
+      if (!currentUser) {
+        router.push('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   const hasContent =
     generatedContent.articles.length > 0 ||
     generatedContent.horoscope !== null ||
     generatedContent.facts !== null;
+
+  if (loadingConfig || !user) {
+    return (
+      <div className="min-h-screen bg-[#f4f7fb] flex items-center justify-center font-sans">
+         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] flex font-sans selection:bg-indigo-100">
@@ -87,7 +120,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </p>
           </div>
 
-          <button className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors">
+          <button 
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+          >
             <LogOut className="h-[18px] w-[18px]" />
             Sign Out
           </button>
@@ -115,11 +151,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-sm font-bold text-slate-900 leading-tight">Aman Talukdar</p>
+                <p className="text-sm font-bold text-slate-900 leading-tight">
+                  {user.email?.split('@')[0] || 'Admin'}
+                </p>
                 <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">Premium</p>
               </div>
-              <div className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm border-2 border-white shadow-sm ring-1 ring-slate-100">
-                AT
+              <div className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm border-2 border-white shadow-sm ring-1 ring-slate-100 uppercase">
+                {user.email?.substring(0, 2) || 'AD'}
               </div>
             </div>
 
