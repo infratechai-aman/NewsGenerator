@@ -77,7 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Newspaper className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h1 className="text-[15px] font-bold tracking-tight leading-tight">Press Management Suite</h1>
+            <h1 className="text-[15px] font-bold tracking-tight leading-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Press Management Suite</h1>
             <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-0.5">Premium</p>
           </div>
         </div>

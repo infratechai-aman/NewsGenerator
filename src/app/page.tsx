@@ -13,7 +13,7 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/25">
               <Newspaper className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-[#0f172a] tracking-tight">Press Management Suite</span>
+            <span className="text-xl font-extrabold text-[#0f172a] tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Press Management Suite</span>
           </div>
 
           <div className="hidden md:flex items-center justify-center gap-10 w-1/2">
@@ -471,7 +471,7 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md">
                   <Newspaper className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-xl font-extrabold text-slate-900 tracking-tight">Press Management Suite</span>
+                <span className="text-xl font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: 'var(--font-playfair)'}}>Press Management Suite</span>
               </div>
               <p className="text-base text-slate-500 leading-[1.8] font-medium max-w-sm">
                 Empowering Indian publishers with AI-driven tools for better news, faster layouts, and smarter automation. Let's build the future of print.
