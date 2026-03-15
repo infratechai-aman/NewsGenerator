@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Auth helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 1. NEWSPAPERS: Authenticated upload, Public read
+    match /newspapers/{allPaths=**} {
+      allow read: if true; // Publicly shareable links
+      allow write: if isSignedIn(); // Only authenticated users can upload
+    }
+
+    // 2. ASSETS (Logos/Images): Owner only
+    match /assets/{userId}/{allPaths=**} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // 3. PROFILE IMAGES: Authenticated read, Owner write
+    match /profiles/{userId}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if request.auth.uid == userId;
+    }
+
+    // Global default: deny all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
