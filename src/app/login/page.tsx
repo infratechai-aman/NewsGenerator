@@ -106,6 +106,19 @@ export default function LoginPage() {
                 </>
               )}
             </button>
+
+            <div className="pt-1 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('admin@press.com');
+                  setPassword('Password123!');
+                }}
+                className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors"
+              >
+                Auto-fill Admin: <span className="font-mono text-blue-600">admin@press.com</span>
+              </button>
+            </div>
           </form>
         </div>
       </div>
