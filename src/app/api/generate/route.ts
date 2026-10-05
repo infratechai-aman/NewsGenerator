@@ -3,7 +3,7 @@ import { generateWithAI } from '@/lib/openai';
 import { getNewsWithImages } from '@/lib/scraper';
 import { generateSudokuData, renderSudokuToDataUrl } from '@/lib/sudoku';
 import { v4 as uuidv4 } from 'uuid';
-import { sanitizeImageUrl, getCategoryFallbackImage } from '@/lib/images';
+import { sanitizeImageUrl, getCategoryFallbackImage, generateDocumentaryImageUrl } from '@/lib/images';
 
 const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   english: 'Write all content in English.',
@@ -12,60 +12,108 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
 };
 
 async function generateArticles(language: string, pageCount: number, targetLocation: string, articleCountSetting: number) {
-  const topics = [
-    'India politics government',
-    'India economy business',
-    'India technology',
-    'India sports cricket',
-    'India education',
-    'world international affairs',
-    'India science environment',
-    'India entertainment Bollywood',
-  ];
+  const cleanLoc = (targetLocation || '').trim();
 
-  const locString = targetLocation ? ` in ${targetLocation}` : '';
+  // Dynamic location-aware topics
+  const topics = cleanLoc
+    ? [
+        { query: `${cleanLoc} news`, label: 'Local Lead Story', category: 'local' },
+        { query: `${cleanLoc} infrastructure road development municipal`, label: 'Civic Infrastructure', category: 'civic' },
+        { query: `${cleanLoc} police crime safety investigation`, label: 'Law & Order', category: 'police' },
+        { query: `${cleanLoc} society residents community traffic`, label: 'Community & Society', category: 'community' },
+        { query: `${cleanLoc} metro transport real estate commercial`, label: 'Transit & Business', category: 'business' },
+        { query: `${cleanLoc} state politics government administration`, label: 'Regional Governance', category: 'politics' },
+        { query: 'India economy business markets investment', label: 'National Economy', category: 'economy' },
+        { query: 'India technology digital AI space innovation', label: 'Technology & Space', category: 'technology' },
+        { query: 'India sports cricket match victory', label: 'Sports & Cricket', category: 'sports' },
+        { query: 'India education environment research sustainability', label: 'Education & Environment', category: 'education' },
+      ]
+    : [
+        { query: 'India national politics government parliament reforms', label: 'National Politics', category: 'politics' },
+        { query: 'India economy business markets industry growth', label: 'Economy & Business', category: 'economy' },
+        { query: 'India technology digital AI semiconductor space', label: 'Tech & Innovation', category: 'technology' },
+        { query: 'India sports cricket tournament championships', label: 'Sports', category: 'sports' },
+        { query: 'India education research universities youth', label: 'Education', category: 'education' },
+        { query: 'world international diplomacy summits foreign relations', label: 'World Affairs', category: 'world' },
+        { query: 'India science space ISRO environment climate', label: 'Science & Environment', category: 'science' },
+        { query: 'India entertainment cinema culture heritage arts', label: 'Entertainment & Culture', category: 'entertainment' },
+      ];
 
-  const articleCount = articleCountSetting || Math.min(pageCount * 2, topics.length);
-  const selectedTopics = topics.slice(0, articleCount);
+  const locString = cleanLoc ? ` in ${cleanLoc}` : ' in India';
+  const totalDesired = articleCountSetting || Math.min(pageCount * 2, topics.length);
+  const selectedTopics = topics.slice(0, totalDesired);
   const articles = [];
 
   for (let i = 0; i < selectedTopics.length; i++) {
-    const topic = selectedTopics[i];
+    const topicItem = selectedTopics[i];
     const isPriority = i === 0;
 
     try {
-      const searchTopic = targetLocation ? `${topic} ${targetLocation}` : topic;
-      const { news, images } = await getNewsWithImages(searchTopic, isPriority ? 4 : 2);
-      const newsContext = news
-        .map((n) => `- ${n.title}: ${n.snippet} (Source: ${n.source})`)
-        .join('\n');
+      const { news, images } = await getNewsWithImages(
+        topicItem.query,
+        isPriority ? 4 : 2,
+        cleanLoc || undefined
+      );
+
+      const realItem = news[0];
+      const newsContext = news.length > 0
+        ? news.map((n) => `- Headline: "${n.title}" | Source: ${n.source} | Date: ${n.date || 'Recent 7 days'} | Excerpt: ${n.snippet}`).join('\n')
+        : `- Topic Focus: "${topicItem.label} developments in ${cleanLoc || 'India'}"`;
 
       const langInstruction = LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english;
+      const wordCountRule = 'You MUST write exactly 100 to 150 words in length across 2 to 3 paragraphs. Do not write less than 100 words, and do not exceed 150 words.';
 
-      const wordCountRule = "You MUST write exactly 100 to 150 words in length. Do not write less than 100 words, and do not exceed 150 words. This ensures the layout is dense and perfect.";
+      const promptContext = realItem
+        ? `REAL BREAKING NEWS EVENT FROM PAST 7 DAYS:
+Headline: "${realItem.title}"
+Source Outlet: ${realItem.source}
+Reported Date: ${realItem.date || 'Past 7 days'}
+Key Snippet: ${realItem.snippet}
+Location: ${cleanLoc || 'India'}
+
+Write an authentic, highly detailed broadsheet report based STRICTLY on this real event.`
+        : `Write an authentic, non-repetitive broadsheet article about recent ${topicItem.label}${locString}. Focus on tangible civic, infrastructure, or institutional updates.`;
 
       const result = await generateWithAI(
-        `You are a professional newspaper journalist. Write an article based on the news source material. ${langInstruction} ${wordCountRule} Do NOT write less than the requested word count, or the layout gaps will be huge. Content Rules: targeted for readers ${locString}.`,
-        `Based on these recent news items about "${topic}":\n${newsContext}\n\nWrite a compelling but strict newspaper article. Return JSON with:\n{\n  "headline": "A powerful, attention-grabbing headline (max 12 words)",\n  "subHeadline": "An insightful secondary headline deck (10-15 words)",\n  "content": "A detailed article of exactly 100-150 words in 2-3 paragraphs",\n  "category": "The news category",\n  "pullQuote": "A striking 10-15 word quotation or memorable takeaway from the article",\n  "keyHighlights": ["Key development 1", "Key development 2", "Key development 3"],\n  "imageCaption": "A brief caption for the article's image (max 15 words)"\n}`
+        `You are a senior chief editor for an authentic daily broadsheet newspaper. ${langInstruction} ${wordCountRule} Write with journalistic authority, neutral editorial tone, and rich broadsheet density.`,
+        `${promptContext}\n\nReturn strictly valid JSON with:
+{
+  "headline": "A dramatic, authentic broadsheet headline (max 12 words)",
+  "subHeadline": "An insightful secondary headline deck (10-15 words)",
+  "content": "A structured, journalistic article of exactly 100-150 words in 2-3 paragraphs",
+  "category": "${topicItem.category}",
+  "pullQuote": "A striking 10-15 word quotation or memorable takeaway",
+  "keyHighlights": ["Key point 1", "Key point 2", "Key point 3"],
+  "imageCaption": "A descriptive, factual photojournalist caption (max 15 words)"
+}`
       );
 
       const parsed = JSON.parse(result);
 
-      // 1. Fetch real photos from search engine or curated editorial photography
-      let articleImages = images.slice(0, isPriority ? 3 : 1).map(img => ({
-        url: sanitizeImageUrl(img.url, parsed.category || topic),
-        caption: parsed.imageCaption || `News regarding ${topic}`
-      }));
+      // Construct verified high-resolution documentary press photography
+      const headlineForPhoto = realItem?.title || parsed.headline || topicItem.label;
+      const primaryPhotoUrl = sanitizeImageUrl(
+        realItem?.imageUrl || generateDocumentaryImageUrl(headlineForPhoto, parsed.category || topicItem.category, cleanLoc),
+        parsed.category || topicItem.category
+      );
 
-      // Fallback: If no search engine images were found, use verified high-res editorial photography
-      if (articleImages.length === 0) {
-        const fallbackUrl = getCategoryFallbackImage(parsed.category || topic);
+      const articleImages = [
+        {
+          url: primaryPhotoUrl,
+          caption: parsed.imageCaption || `Developments regarding ${parsed.headline || topicItem.label}`,
+        },
+      ];
+
+      // If priority front page, add secondary photo if available
+      if (isPriority && news[1]) {
         articleImages.push({
-          url: fallbackUrl,
-          caption: parsed.imageCaption || `News regarding ${topic}`
+          url: sanitizeImageUrl(
+            news[1].imageUrl || generateDocumentaryImageUrl(news[1].title, parsed.category || topicItem.category, cleanLoc),
+            parsed.category || topicItem.category
+          ),
+          caption: `Related regional developments in ${cleanLoc || 'the state'}`,
         });
       }
-
 
       articles.push({
         id: uuidv4(),
@@ -73,19 +121,19 @@ async function generateArticles(language: string, pageCount: number, targetLocat
         subHeadline: parsed.subHeadline || undefined,
         content: parsed.content,
         images: articleImages,
-        imageUrl: articleImages[0]?.url || null,
+        imageUrl: articleImages[0]?.url || primaryPhotoUrl,
         imageCaption: parsed.imageCaption || null,
-        category: parsed.category || topic,
-        source: news[0]?.source || 'Staff Reporter',
-        date: new Date().toISOString(),
+        category: parsed.category || topicItem.category,
+        source: realItem?.source || 'Staff Reporter',
+        date: realItem?.date || new Date().toISOString(),
         pullQuote: parsed.pullQuote || undefined,
         keyHighlights: Array.isArray(parsed.keyHighlights) ? parsed.keyHighlights : undefined,
       });
 
-      // Avoid image scraping rate limits
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Brief delay to prevent rate limits
+      await new Promise((resolve) => setTimeout(resolve, 400));
     } catch (error) {
-      console.error(`Error generating article for ${topic}:`, error);
+      console.error(`Error generating article for ${topicItem.query}:`, error);
     }
   }
 

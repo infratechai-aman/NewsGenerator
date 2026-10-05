@@ -28,6 +28,8 @@ import {
   Tv,
   Palette,
   Eye,
+  Upload,
+  Check,
 } from 'lucide-react';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
@@ -74,6 +76,7 @@ export default function PlannerPage() {
     manualArticles,
     assets,
     publication,
+    setPublication,
     assignContentToSlot,
     removeContentFromSlot,
     isRenderingPdf,
@@ -85,12 +88,14 @@ export default function PlannerPage() {
   } = useAppStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
 
   const [activePageIdx, setActivePageIdx] = useState(0);
   const [draggedBlock, setDraggedBlock] = useState<ContentBlock | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showLogoModal, setShowLogoModal] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>('');
 
   const currentTheme = getThemeById(publication.themeId || 'classic-broadsheet');
@@ -332,6 +337,19 @@ export default function PlannerPage() {
     }
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64Url = event.target?.result as string;
+      if (base64Url) {
+        setPublication({ mastheadLogo: base64Url });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const getSlotGridClasses = (colSpan: number): string => {
     switch (colSpan) {
       case 6: return 'col-span-6';
@@ -364,6 +382,20 @@ export default function PlannerPage() {
                 ))}
               </select>
             </div>
+            {/* Logo quick button */}
+            <Button
+              onClick={() => setShowLogoModal(true)}
+              variant="outline"
+              size="sm"
+              className="border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold shadow-sm flex items-center gap-1.5 text-xs h-7 px-2.5"
+            >
+              {publication.mastheadLogo ? (
+                <img src={publication.mastheadLogo} alt="Logo" className="h-3.5 w-3.5 object-contain rounded" />
+              ) : (
+                <Upload className="h-3 w-3 text-blue-600" />
+              )}
+              <span>{publication.mastheadLogo ? 'Masthead Logo' : 'Add Logo'}</span>
+            </Button>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -725,6 +757,120 @@ export default function PlannerPage() {
               title="Broadsheet Preview"
               className="w-full h-full max-w-[220mm] rounded-lg shadow-2xl bg-white border border-slate-700"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Hidden file input for logo upload */}
+      <input
+        type="file"
+        ref={logoInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleLogoUpload}
+      />
+
+      {/* Publication Logo Modal */}
+      {showLogoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                  <Upload className="h-4 w-4" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-sm">Publication Masthead Logo</h3>
+                  <p className="text-xs text-slate-500">Appears on Page 1 masthead above or beside title</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowLogoModal(false)}
+                className="h-8 w-8 text-slate-400 hover:text-slate-700 rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Preview Box */}
+              <div>
+                <span className="text-xs font-bold text-slate-700 block mb-2">Current Masthead Preview:</span>
+                <div className="border border-slate-200 rounded-xl p-4 bg-slate-50 flex flex-col items-center justify-center min-h-[110px] text-center">
+                  {publication.mastheadLogo ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <img
+                        src={publication.mastheadLogo}
+                        alt="Current Logo"
+                        className="max-h-16 max-w-[200px] object-contain bg-white p-1 rounded border border-slate-200 shadow-sm"
+                      />
+                      <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        ✓ Logo active on Page 1
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-slate-400 text-xs flex flex-col items-center gap-1.5">
+                      <ImageIcon className="h-8 w-8 text-slate-300" />
+                      <span>No logo uploaded yet. Masthead uses standard typographic title.</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload Option 1: File Upload */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-slate-700 block">Option 1: Upload Image File</span>
+                <Button
+                  onClick={() => logoInputRef.current?.click()}
+                  variant="outline"
+                  className="w-full border-dashed border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 text-blue-700 font-semibold h-11 flex items-center justify-center gap-2 rounded-xl"
+                >
+                  <Upload className="h-4 w-4 text-blue-600" />
+                  <span>Choose Logo File (PNG, JPG, SVG, WebP)</span>
+                </Button>
+                <p className="text-[11px] text-slate-500 text-center">
+                  Recommended: Transparent PNG or SVG logo for crisp broadsheet reproduction.
+                </p>
+              </div>
+
+              {/* Upload Option 2: Image URL */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-slate-700 block">Option 2: Direct Image URL</span>
+                <input
+                  type="text"
+                  placeholder="https://example.com/newspaper-logo.png"
+                  value={publication.mastheadLogo?.startsWith('http') ? publication.mastheadLogo : ''}
+                  onChange={(e) => {
+                    const val = e.target.value.trim();
+                    setPublication({ mastheadLogo: val || null });
+                  }}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+                />
+              </div>
+            </div>
+
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+              {publication.mastheadLogo ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPublication({ mastheadLogo: null })}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-semibold h-8 px-2.5"
+                >
+                  Remove Logo
+                </Button>
+              ) : <div />}
+
+              <Button
+                size="sm"
+                onClick={() => setShowLogoModal(false)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-8 px-4 rounded-lg shadow-sm"
+              >
+                Done
+              </Button>
+            </div>
           </div>
         </div>
       )}

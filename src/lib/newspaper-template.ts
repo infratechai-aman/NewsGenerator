@@ -135,13 +135,15 @@ function renderMasthead(pub: PublicationConfig, theme: NewspaperTheme): string {
 
   return `
     <header class="masthead">
-      <div class="masthead-main">
-        ${pub.mastheadLogo ? `<img src="${pub.mastheadLogo}" alt="Logo" class="masthead-logo" />` : ''}
-        <h1 class="masthead-title" style="font-family:${theme.mastheadFont}; color:${theme.mastheadText};">
-          ${mastheadTitle}
-        </h1>
-        <div class="masthead-tagline" style="font-family:${theme.bodyFont}; color:${theme.mastheadText};">
-          — ${mastheadTagline.toUpperCase()} —
+      <div class="masthead-main ${pub.mastheadLogo ? 'has-logo' : ''}">
+        ${pub.mastheadLogo ? `<div class="masthead-logo-container"><img src="${pub.mastheadLogo}" alt="Logo" class="masthead-logo" /></div>` : ''}
+        <div class="masthead-text-block">
+          <h1 class="masthead-title" style="font-family:${theme.mastheadFont}; color:${theme.mastheadText};">
+            ${mastheadTitle}
+          </h1>
+          <div class="masthead-tagline" style="font-family:${theme.bodyFont}; color:${theme.mastheadText};">
+            — ${mastheadTagline.toUpperCase()} —
+          </div>
         </div>
       </div>
 
@@ -1599,16 +1601,29 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     }
     .masthead-main {
       padding: 1px 0 2px 0;
-      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .masthead-main.has-logo {
+      gap: 16px;
+    }
+    .masthead-logo-container {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .masthead-logo {
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      max-height: 38px;
-      max-width: 80px;
+      max-height: 46px;
+      max-width: 105px;
       object-fit: contain;
+      display: block;
+    }
+    .masthead-text-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .masthead-title {
       font-size: 32pt;

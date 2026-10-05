@@ -17,7 +17,8 @@ import {
   Megaphone,
   PenTool,
   Wand2,
-  Key
+  Key,
+  MapPin,
 } from 'lucide-react';
 
 const contentTypes = [
@@ -185,6 +186,24 @@ export default function ContentGenerator() {
           </div>
         ) : (
           <>
+            {/* Target Location Quick-Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-indigo-50/70 border border-indigo-200/80 p-3 rounded-xl mb-3 shadow-inner">
+              <div className="flex items-center gap-2 flex-1">
+                <MapPin className="h-4 w-4 text-indigo-600 flex-shrink-0" />
+                <span className="text-xs font-bold text-indigo-950 whitespace-nowrap">Target Location:</span>
+                <input
+                  type="text"
+                  placeholder="e.g. Kondhwa, Pune, Mumbai (Leave blank for National)"
+                  value={publication.targetLocation || ''}
+                  onChange={(e) => updatePublication({ targetLocation: e.target.value })}
+                  className="bg-white border border-indigo-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 h-8 shadow-sm"
+                />
+              </div>
+              <span className="text-[11px] font-semibold text-indigo-700 bg-white px-2 py-1 rounded-md border border-indigo-100 shadow-xs self-start sm:self-auto">
+                ⚡ Real 7-day live news + local photos
+              </span>
+            </div>
+
             {/* Status summary */}
             <div className="flex gap-2 mb-2">
               <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">

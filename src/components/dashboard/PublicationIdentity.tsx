@@ -13,25 +13,18 @@ export default function PublicationIdentity() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogoUpload = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'logo');
-
-      try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.url) {
-          setPublication({ mastheadLogo: data.url });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Url = event.target?.result as string;
+        if (base64Url) {
+          setPublication({ mastheadLogo: base64Url });
         }
-      } catch {
-        // Fallback: use object URL
-        const url = URL.createObjectURL(file);
-        setPublication({ mastheadLogo: url });
-      }
+      };
+      reader.readAsDataURL(file);
     },
     [setPublication]
   );
@@ -48,10 +41,17 @@ export default function PublicationIdentity() {
       </CardHeader>
       <CardContent className="space-y-8 px-8 pb-8">
         {/* Masthead Logo */}
-        <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700">Masthead Logo</Label>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-bold text-slate-700">Masthead Logo</Label>
+            {publication.mastheadLogo && (
+              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                Logo Active
+              </span>
+            )}
+          </div>
           <div
-            className="relative border-2 border-dashed border-slate-200 bg-slate-50/50 rounded-2xl p-10 text-center cursor-pointer transition-all duration-300 hover:border-blue-400 hover:bg-blue-50 group hover:shadow-inner"
+            className="relative border-2 border-dashed border-slate-200 bg-slate-50/50 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-400 hover:bg-blue-50 group hover:shadow-inner"
             onClick={() => fileInputRef.current?.click()}
           >
             {publication.mastheadLogo ? (
@@ -59,7 +59,7 @@ export default function PublicationIdentity() {
                 <img
                   src={publication.mastheadLogo}
                   alt="Masthead Logo"
-                  className="max-h-24 mx-auto object-contain rounded-md shadow-sm bg-white p-2 border border-slate-100"
+                  className="max-h-20 mx-auto object-contain rounded-md shadow-sm bg-white p-2 border border-slate-100"
                 />
                 <Button
                   variant="ghost"
@@ -72,17 +72,18 @@ export default function PublicationIdentity() {
                 >
                   <X className="h-4 w-4" />
                 </Button>
+                <p className="text-xs text-slate-500 mt-2">Click to replace logo</p>
               </div>
             ) : (
-              <div className="space-y-3 flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:border-blue-200 group-hover:text-blue-500 transition-all">
+              <div className="space-y-2 flex flex-col items-center">
+                <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:border-blue-200 group-hover:text-blue-500 transition-all">
                   <ImageIcon className="h-5 w-5 text-slate-400 group-hover:text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-semibold text-slate-700">
                     Click to upload your masthead logo
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 5MB (Transparent recommended)</p>
+                  <p className="text-xs text-slate-500 mt-0.5">PNG, JPG, SVG, WebP (Transparent recommended)</p>
                 </div>
               </div>
             )}
@@ -92,6 +93,17 @@ export default function PublicationIdentity() {
               accept="image/*"
               className="hidden"
               onChange={handleLogoUpload}
+            />
+          </div>
+
+          {/* Direct URL input fallback */}
+          <div className="pt-1">
+            <Input
+              type="text"
+              placeholder="Or enter direct Logo URL (https://...)"
+              value={publication.mastheadLogo?.startsWith('http') ? publication.mastheadLogo : ''}
+              onChange={(e) => setPublication({ mastheadLogo: e.target.value.trim() || null })}
+              className="text-xs bg-slate-50 border-slate-200 h-9 rounded-lg"
             />
           </div>
         </div>
