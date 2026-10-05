@@ -89,15 +89,20 @@ function buildFullLeadStoryParagraphs(content: string, headline: string): string
   return [p1, p2, p3, p4];
 }
 
-// Ensures secondary stories have sufficient length to fill below the thumbnail
-function buildSecondaryStorySnippet(content: string, headline: string): string {
+// Ensures secondary stories have sufficient length to fill below the thumbnail with authentic broadsheet substance
+function buildRichSecondaryStoryText(content: string, headline: string, minWords: number = 55): string {
   const paragraphs = cleanArticleText(content);
   const text = paragraphs.join(' ').trim();
   const words = text.split(/\s+/).filter(Boolean);
-  if (words.length >= 45) {
-    return words.slice(0, 60).join(' ') + (words.length > 60 ? '...' : '');
+  if (words.length >= minWords) {
+    return words.slice(0, minWords + 20).join(' ') + (words.length > minWords + 20 ? '...' : '');
   }
-  return `${text || headline} Senior officials and industry delegates welcomed the constructive engagement, noting that ongoing structural reforms and collaborative working groups will bolster operational momentum across regional sectors.`;
+  const base = text || headline;
+  return `${base}. Senior administrative officials and industry delegates welcomed the constructive engagement during strategic review conclaves in the capital. Working groups confirmed that revised statutory frameworks and collaborative implementation channels will bolster operational momentum across regional sectors over the coming financial quarters.`;
+}
+
+function buildSecondaryStorySnippet(content: string, headline: string): string {
+  return buildRichSecondaryStoryText(content, headline, 55);
 }
 
 // ─── Category Header Strip ────────────────────────────────────────────────────
@@ -197,18 +202,78 @@ function renderInBriefSidebar(briefs: BriefItem[], theme: NewspaperTheme): strin
 }
 
 // ─── Briefs Strip (Bottom Band of Any Page) ───────────────────────────────────
-function renderBriefStrip(briefs: BriefItem[], categoryLabel: string, theme: NewspaperTheme): string {
-  const colors = getCategoryColor(categoryLabel.toLowerCase(), theme);
+function getDefaultBriefs(category: string): BriefItem[] {
+  const cat = (category || '').toLowerCase();
+  if (cat.includes('politic')) {
+    return [
+      { category: 'PARLIAMENT', headline: 'Monsoon session concludes after marathon debate on electoral reforms', page: '2' },
+      { category: 'ELECTION', headline: 'Election Commission announces schedule for upcoming state assemblies', page: '2' },
+      { category: 'JUDICIARY', headline: 'Supreme Court bench upholds new digital personal data rules', page: '3' },
+      { category: 'GOVERNANCE', headline: 'Centre rolls out unified single-window clearance for urban infra', page: '2' },
+    ];
+  }
+  if (cat.includes('internat') || cat.includes('world')) {
+    return [
+      { category: 'G20', headline: 'Member nations ratify historic climate transition investment framework', page: '3' },
+      { category: 'TECH DIPLOMACY', headline: 'EU and India sign landmark AI security and semiconductor treaty', page: '3' },
+      { category: 'AVIATION', headline: 'New direct air corridors opened linking Mumbai with South American hubs', page: '3' },
+      { category: 'ENERGY', headline: 'International Solar Alliance expands microgrid funding to 15 nations', page: '3' },
+    ];
+  }
+  if (cat.includes('busin') || cat.includes('tech') || cat.includes('econom')) {
+    return [
+      { category: 'SEMICONDUCTORS', headline: 'First indigenous 28nm silicon chips roll out from Dholera fab', page: '4' },
+      { category: 'STARTUPS', headline: 'Venture funding touches 18-month high with $2.4B deployed in Q3', page: '4' },
+      { category: 'FINTECH', headline: 'UPI crosses 16 billion monthly transactions with cross-border surge', page: '4' },
+      { category: 'AUTOMOTIVE', headline: 'Commercial EV registrations cross 25% milestone across tier-1 cities', page: '4' },
+    ];
+  }
+  if (cat.includes('educ') || cat.includes('scien')) {
+    return [
+      { category: 'SPACE', headline: 'ISRO clears launch window for Chandrayaan-4 lunar sample return', page: '5' },
+      { category: 'QUANTUM', headline: 'National Quantum Mission inaugurates central testbed facility', page: '5' },
+      { category: 'SCHOLARSHIP', headline: 'Over 2 lakh students awarded premier higher education merit grants', page: '5' },
+      { category: 'GENOMICS', headline: 'Indigenous bio-bank repository launched to accelerate rare disease cures', page: '5' },
+    ];
+  }
+  if (cat.includes('sport')) {
+    return [
+      { category: 'CRICKET', headline: 'India secures commanding lead in Melbourne Test after record opening stand', page: '6' },
+      { category: 'BADMINTON', headline: 'National duo storms into finals of Denmark Open Super 750', page: '6' },
+      { category: 'FOOTBALL', headline: 'Bengaluru FC moves to top of ISL standings following stoppage winner', page: '6' },
+      { category: 'CHESS', headline: 'Indian grandmaster claims sole lead in round seven of Tata Steel Masters', page: '6' },
+    ];
+  }
+  if (cat.includes('entert') || cat.includes('life')) {
+    return [
+      { category: 'BOX OFFICE', headline: 'Pan-India period drama crosses ₹450 crore worldwide in opening week', page: '7' },
+      { category: 'HERITAGE', headline: 'Crafts Biennale brings 300 traditional master artisans to Red Fort', page: '7' },
+      { category: 'AWARDS', headline: 'National streaming honors celebrate breakthrough independent cinema', page: '7' },
+      { category: 'CULINARY', headline: 'Indigenous millets and regional grains take center stage at food fest', page: '7' },
+    ];
+  }
+  if (cat.includes('opin') || cat.includes('feat')) {
+    return [
+      { category: 'LETTERS', headline: 'Readers discuss the roadmap for sustainable urban expansion', page: '8' },
+      { category: 'ARCHIVES', headline: 'Reflecting on 75 years of constitutional jurisprudence', page: '8' },
+      { category: 'ESSAY', headline: 'The evolving language of contemporary public discourse', page: '8' },
+      { category: 'PERSPECTIVE', headline: 'Rethinking higher education for the artificial intelligence era', page: '8' },
+    ];
+  }
+  return [
+    { category: 'MARKETS', headline: 'RBI keeps repo rate steady at 6.5% amid controlled core inflation', page: '4' },
+    { category: 'INVESTMENTS', headline: 'FDI inflows jump 18% in first half led by manufacturing & fintech', page: '4' },
+    { category: 'TECHNOLOGY', headline: 'Indian IT firms secure major multi-billion global AI enterprise deals', page: '4' },
+    { category: 'STARTUPS', headline: 'Over 1 lakh new startups officially registered under DPIIT in 2026', page: '4' },
+  ];
+}
+
+function renderBriefStrip(briefs: BriefItem[], category: string, categoryLabel: string, theme: NewspaperTheme): string {
+  const colors = getCategoryColor(category.toLowerCase(), theme);
   const title = categoryLabel.split('(')[0].trim().toUpperCase() + ' BRIEFS';
   const accent = theme.accentColor === '#0a0a0a' ? '#c0392b' : theme.accentColor;
 
-  const defaultItems: BriefItem[] = [
-    { category: 'Markets', headline: 'RBI keeps repo rate steady at 6.5% amid controlled core inflation', page: '4' },
-    { category: 'Investments', headline: 'FDI inflows jump 18% in first half led by manufacturing & fintech', page: '4' },
-    { category: 'Technology', headline: 'Indian IT firms secure major multi-billion global AI enterprise deals', page: '4' },
-    { category: 'Startups', headline: 'Over 1 lakh new startups officially registered under DPIIT in 2026', page: '4' },
-  ];
-
+  const defaultItems = getDefaultBriefs(category);
   const items = briefs && briefs.length > 0 ? briefs.slice(0, 4) : defaultItems;
 
   return `
@@ -336,20 +401,36 @@ function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: 
 }
 
 // ─── Secondary Story (Compact Authentic Broadsheet) ──────────────────────────
-function renderSecondaryStory(article: NewsArticle | null, theme: NewspaperTheme, pubDate?: string, pageJump: string = 'Page 2'): string {
+function renderSecondaryStory(
+  article: NewsArticle | null,
+  theme: NewspaperTheme,
+  pubDate?: string,
+  pageJump: string = 'Page 2',
+  options?: {
+    thumbHeight?: string;
+    showImage?: boolean;
+    minWords?: number;
+    headlineSize?: string;
+  }
+): string {
   if (!article) return '';
-  const snippet = buildSecondaryStorySnippet(article.content, article.headline);
+  const minWords = options?.minWords || 55;
+  const thumbHeight = options?.thumbHeight || '30mm';
+  const showImage = options?.showImage !== false;
+  const headlineSize = options?.headlineSize || '9.6pt';
+
+  const snippet = buildRichSecondaryStoryText(article.content, article.headline, minWords);
   const displayDate = article.date ? shortDate(article.date) : shortDate(pubDate);
-  const imgUrl = sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category) || getCategoryFallbackImage(article.category);
+  const imgUrl = showImage ? (sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category) || getCategoryFallbackImage(article.category)) : null;
 
   return `
     <article class="sec-story-card">
-      <h3 class="sec-story-hl" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">
+      <h3 class="sec-story-hl" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:${headlineSize};">
         ${article.headline}
       </h3>
       ${imgUrl ? `
         <div class="sec-img-wrap">
-          <img src="${imgUrl}" alt="${article.headline}" class="sec-thumb" style="border: 0.5pt solid ${theme.inkColor};" />
+          <img src="${imgUrl}" alt="${article.headline}" class="sec-thumb" style="border: 0.5pt solid ${theme.inkColor}; height:${thumbHeight};" />
         </div>
       ` : ''}
       <div class="sec-byline" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.75;">
@@ -545,31 +626,323 @@ function renderSportsStatCard(theme: NewspaperTheme): string {
   `;
 }
 
-// ─── State Roundup Grid (Page 2) ──────────────────────────────────────────────
-function renderStateRoundup(theme: NewspaperTheme): string {
-  const states = [
-    { state: 'MAHARASHTRA', headline: 'New industrial corridor plan announced for Marathwada region', tag: 'Mumbai' },
-    { state: 'DELHI', headline: 'Air quality mitigation measures strengthened ahead of winter season', tag: 'New Delhi' },
-    { state: 'KARNATAKA', headline: 'Tech and semiconductor investments cross ₹50,000 crore milestone', tag: 'Bengaluru' },
-    { state: 'TAMIL NADU', headline: 'Comprehensive public education modernization reforms take effect', tag: 'Chennai' },
-  ];
+// ─── Modular Feature Strip Components ─────────────────────────────────────────
+interface FeatureCardItem {
+  state: string;
+  headline: string;
+  tag?: string;
+  summary: string;
+}
+
+function renderFeatureStrip(
+  headerTitle: string,
+  items: FeatureCardItem[],
+  theme: NewspaperTheme,
+  headerBg?: string
+): string {
+  const bg = headerBg || (theme.accentColor === '#0a0a0a' ? '#0f2b48' : theme.accentColor);
+  const accent = theme.accentColor === '#0a0a0a' ? '#c0392b' : theme.accentColor;
 
   return `
     <div class="state-roundup-container" style="border-top: 1.5pt solid ${theme.inkColor};">
-      <div class="sru-header" style="background:${theme.accentColor === '#0a0a0a' ? '#991b1b' : theme.accentColor}; color:#ffffff; font-family:${theme.uiFont};">
-        STATE ROUNDUP &nbsp;—&nbsp; KEY DEVELOPMENTS ACROSS THE NATION
+      <div class="sru-header" style="background:${bg}; color:#ffffff; font-family:${theme.uiFont};">
+        ${headerTitle}
       </div>
       <div class="sru-grid">
-        ${states.map((s, idx) => `
-          <div class="sru-card" style="${idx < states.length - 1 ? `border-right: 0.5pt solid ${theme.columnRuleColor};` : ''}">
-            <span class="sru-state" style="color:${theme.accentColor === '#0a0a0a' ? '#c0392b' : theme.accentColor}; font-family:${theme.uiFont};">${s.state}</span>
-            <h4 class="sru-hl" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${s.headline}</h4>
-            <span class="sru-tag" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.6;">Dateline: ${s.tag}</span>
+        ${items.map((item, idx) => `
+          <div class="sru-card" style="${idx < items.length - 1 ? `border-right: 0.5pt solid ${theme.columnRuleColor};` : ''}">
+            <span class="sru-state" style="color:${accent}; font-family:${theme.uiFont};">${item.state}</span>
+            <h4 class="sru-hl" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${item.headline}</h4>
+            <p class="sru-summary" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${item.summary}</p>
+            ${item.tag ? `<span class="sru-tag" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.6;">Dateline: ${item.tag}</span>` : ''}
           </div>
         `).join('')}
       </div>
     </div>
   `;
+}
+
+// ─── State Roundup Grid (Page 2 - Politics) ───────────────────────────────────
+function renderStateRoundup(theme: NewspaperTheme): string {
+  const states: FeatureCardItem[] = [
+    { state: 'MAHARASHTRA', headline: 'New industrial corridor plan announced for Marathwada region', tag: 'Mumbai', summary: 'Cabinet sub-committee approves ₹18,400 crore multimodal logistics nodes connecting regional agro-industrial hubs.' },
+    { state: 'DELHI', headline: 'Air quality mitigation measures strengthened ahead of winter season', tag: 'New Delhi', summary: 'Municipal taskforces deploy anti-smog equipment and enforce dust-control compliance across construction sites.' },
+    { state: 'KARNATAKA', headline: 'Tech and semiconductor investments cross ₹50,000 crore milestone', tag: 'Bengaluru', summary: 'Three advanced fabrication testing units slated to operationalize in electronic city cluster by mid next year.' },
+    { state: 'TAMIL NADU', headline: 'Comprehensive public education modernization reforms take effect', tag: 'Chennai', summary: 'Smart classrooms, AI-enabled tutoring, and updated STEM curricula introduced across 4,200 municipal schools.' },
+  ];
+  return renderFeatureStrip('STATE ROUNDUP — KEY DEVELOPMENTS ACROSS THE NATION', states, theme, '#991b1b');
+}
+
+// ─── World in Focus (Page 3 - International) ──────────────────────────────────
+function renderWorldInFocus(theme: NewspaperTheme): string {
+  const items: FeatureCardItem[] = [
+    { state: 'UNITED NATIONS', headline: 'General Assembly adopts landmark framework on digital sovereignty', tag: 'New York', summary: '142 member nations vote in favor of global cybersecurity standards and ethical AI governance protocols.' },
+    { state: 'INDO-PACIFIC', headline: 'Maritime security pact expanded to safeguard strategic sea lanes', tag: 'Singapore', summary: 'Regional naval forces announce coordinated surveillance and disaster response taskforces across key straits.' },
+    { state: 'EUROPEAN UNION', headline: 'Cross-border clean energy grid integration enters implementation', tag: 'Brussels', summary: 'Ministers approve €45 billion capital fund for high-voltage offshore interconnectors linking 8 member states.' },
+    { state: 'AMERICAS', headline: 'Multilateral trade dialogue addresses supply chain resilience', tag: 'Washington', summary: 'Bilateral delegations sign fast-track customs clearance pact for semiconductors and critical minerals.' },
+  ];
+  return renderFeatureStrip('WORLD IN FOCUS — STRATEGIC DIPLOMATIC & GLOBAL DEVELOPMENTS', items, theme, '#0f172a');
+}
+
+// ─── Corporate & Sector Pulse (Page 4 - Business & Tech) ──────────────────────
+function renderCorporatePulse(theme: NewspaperTheme): string {
+  const items: FeatureCardItem[] = [
+    { state: 'AUTOMOTIVE & EVS', headline: 'Commercial EV registrations cross 25% milestone across tier-1 cities', tag: 'Fleet Transition', summary: 'Subsidies and corporate fleet mandates accelerate electric commercial van adoption across major freight hubs.' },
+    { state: 'BANKING & FINTECH', headline: 'Digital lending volumes surge 32% driven by unified credit protocol', tag: 'Credit Expansion', summary: 'Public and private banks report record retail asset quality and streamlined MSME loan disbursals.' },
+    { state: 'SEMICONDUCTORS', headline: 'First indigenous 28nm silicon chips roll out from Dholera fabrication facility', tag: 'High-Tech Mfg', summary: 'Commercial packaging and validation testing commence with leading consumer electronics partners.' },
+    { state: 'VENTURE CAPITAL', headline: 'Early-stage venture funding touches 18-month high with $2.4B deployed', tag: 'Startup Ecosystem', summary: 'Generative enterprise AI, deep-tech robotics, and climate-tech capture over 60% of quarterly capital rounds.' },
+  ];
+  return renderFeatureStrip('INDUSTRY & SECTOR PULSE — CORPORATE & STARTUP ROUNDUP', items, theme, '#065f46');
+}
+
+// ─── Science & Academia Snapshot (Page 5 - Education & Science) ───────────────
+function renderSciTechRoundup(theme: NewspaperTheme): string {
+  const items: FeatureCardItem[] = [
+    { state: 'DEEP SPACE', headline: 'ISRO validates autonomous docking systems for upcoming lunar sample return', tag: 'Space Research', summary: 'Ground station simulations confirm precise rendezvous telemetry for dual-module propulsion stage.' },
+    { state: 'CLEAN ENERGY', headline: 'Indigenous next-gen solid-state battery prototypes demonstrate 1,200 charge cycles', tag: 'Materials Science', summary: 'National chemical laboratory signs commercial transfer pact with domestic energy conglomerates.' },
+    { state: 'HIGHER EDUCATION', headline: 'National Research Foundation disburses ₹8,000 crore grants to university labs', tag: 'Academic Grants', summary: 'Over 450 interdisciplinary projects in quantum computing and bio-engineering receive multi-year funding.' },
+    { state: 'PUBLIC HEALTH', headline: 'Genome mapping initiative completes sequencing of 10,000 representative strains', tag: 'Bio-Informatics', summary: 'Open-access genomic repository opens for diagnostic research targeting rare metabolic disorders.' },
+  ];
+  return renderFeatureStrip('DISCOVERY & INNOVATION — SCIENCE & ACADEMIA SNAPSHOT', items, theme, '#581c87');
+}
+
+// ─── Sports Scoreboard (Page 6 - Sports) ──────────────────────────────────────
+function renderSportsScoreboard(theme: NewspaperTheme): string {
+  const items: FeatureCardItem[] = [
+    { state: 'TEST CRICKET', headline: 'India dominates opening day in Melbourne with commanding 342/3 total', tag: 'MCG Ground', summary: 'Top-order pair register twin centuries as host bowling attack struggles under overcast skies.' },
+    { state: 'FOOTBALL', headline: 'Bengaluru FC edge past Mohun Bagan 2-1 in thrilling national league clash', tag: 'ISL Championship', summary: 'Stoppage-time header secures crucial three points in front of a packed home stadium.' },
+    { state: 'CHESS', headline: 'Indian grandmaster claims sole lead at Tata Steel Masters tournament', tag: 'Wijk aan Zee', summary: 'Flawless 42-move endgame technique topples world number three in round seven encounter.' },
+    { state: 'BADMINTON', headline: 'National doubles duo advances to semifinals of Denmark Open Super 750', tag: 'Odense', summary: 'Straight-game victory over reigning world champions secures podium finish.' },
+  ];
+  return renderFeatureStrip('THE ARENA — ROUNDUP & CHAMPIONSHIP SCOREBOARD', items, theme, '#c2410c');
+}
+
+// ─── Cultural Mosaic (Page 7 - Entertainment & Lifestyle) ─────────────────────
+function renderCultureRoundup(theme: NewspaperTheme): string {
+  const items: FeatureCardItem[] = [
+    { state: 'BOX OFFICE', headline: 'Pan-India period drama crosses ₹450 crore worldwide in record opening week', tag: 'Cinema Box Office', summary: 'Substantial multiplex footfalls and international collections propel theatrical resurgence.' },
+    { state: 'HERITAGE & ARTS', headline: 'Triennial Indian Crafts Biennale opens at historic Red Fort pavilions', tag: 'Crafts Exhibition', summary: 'Over 300 traditional master artisans showcase dying weave traditions and stone sculpture.' },
+    { state: 'GASTRONOMY', headline: 'Indigenous regional grains take centre stage at global culinary symposium', tag: 'Culinary Trends', summary: 'Michelin-starred chefs explore millet gastronomy and traditional fermentation sciences.' },
+    { state: 'STREAMING & OTT', headline: 'National streaming awards celebrate regional storytelling and independent cinema', tag: 'Digital Awards', summary: 'Documentary on Western Ghats biodiversity takes top honors among 40 nominated entries.' },
+  ];
+  return renderFeatureStrip('CULTURAL MOSAIC — ARTS, CINEMA & LIVING', items, theme, '#831843');
+}
+
+// ─── Category-Specific Rich Article Fallbacks ─────────────────────────────────
+function getDefaultCategoryArticles(category: string, pageNum: number, pubDate?: string): NewsArticle[] {
+  const defaults: Record<string, Array<{ headline: string; subHeadline: string; snippet: string }>> = {
+    politics: [
+      {
+        headline: 'Parliament Clears Major Electoral & Inter-State Governance Reform Bill',
+        subHeadline: 'Bipartisan consensus establishes streamlined consultative framework across state legislatures',
+        snippet: 'Senior parliamentary leaders ratified landmark governance provisions today, paving the way for digital voting transparency, revised assembly seat delimitations, and institutional dispute resolution mechanisms.',
+      },
+      {
+        headline: 'Cabinet Committee Approves ₹15,000-cr Welfare & Rural Infrastructure Allocations',
+        subHeadline: 'Targeted funding aims to boost agricultural logistics and rural connectivity',
+        snippet: 'The executive committee cleared a multi-phase infrastructure package targeting cold-storage networks, paved rural highways, and village-level solar irrigation systems.',
+      },
+      {
+        headline: 'Delimitation Commission Concludes Regional Stakeholder Consultations',
+        subHeadline: 'Public hearings held across ten administrative zones to ensure representative equity',
+        snippet: 'Officials reported broad civic participation during zonal deliberations, noting that revised constituency boundaries will incorporate recent demographic data seamlessly.',
+      },
+      {
+        headline: 'Inter-State Fiscal Council Formulates New Revenue Sharing Formula',
+        subHeadline: 'Finance ministers deliberate on GST redistribution and fiscal incentives',
+        snippet: 'State finance secretariats agreed on updated weights for environmental forest cover and demographic stabilization in annual tax distribution formulas.',
+      },
+      {
+        headline: 'Judiciary Bench Upholds Landmark Digital Governance & Transparency Protocols',
+        subHeadline: 'Constitutional bench affirms citizen data security and public portal accessibility',
+        snippet: 'In a unanimous ruling, the apex court validated algorithmic audit mandates for government procurement, reinforcing accountability across public delivery schemes.',
+      },
+    ],
+    international: [
+      {
+        headline: 'Global Climate Conclave Ratifies Binding Decarbonisation & Finance Accord',
+        subHeadline: 'Over 140 nations agree on $100 billion annual climate resilience funding mechanism',
+        snippet: 'Delegates concluded high-stakes negotiations in New Delhi with a historic pact establishing binding clean energy transition deadlines and technology sharing corridors.',
+      },
+      {
+        headline: 'UN Security Council Convenes Special Session on Strategic Maritime Corridors',
+        subHeadline: 'Member nations deliberate on navigation freedoms and joint anti-piracy patrols',
+        snippet: 'Diplomatic envoys underscored the urgent imperative to preserve unimpeded commercial shipping lanes across key straits amid rising geopolitical posturing.',
+      },
+      {
+        headline: 'Cross-Border Semiconductor Alliances Establish Redundant Supply Corridors',
+        subHeadline: 'Bilateral industrial pact accelerates wafer foundry investments and talent exchange',
+        snippet: 'Key manufacturing economies signed a joint resilience framework ensuring uninterrupted distribution of critical electronic components during global crises.',
+      },
+      {
+        headline: 'G20 Finance Deputies Finalize Common Protocol for Sovereign Debt Restructuring',
+        subHeadline: 'Multilateral framework provides predictable relief timelines for developing economies',
+        snippet: 'Central bank governors welcomed the transparent debt treatment guidelines, noting that enhanced private sector participation will prevent liquidity crises.',
+      },
+      {
+        headline: 'Multilateral Trade Accord Lowers Non-Tariff Barriers Across 18 Nations',
+        subHeadline: 'Harmonized digital standards and mutual recognition agreements take effect',
+        snippet: 'Customs authorities initiated paperless trade channels, expecting regional container throughput times to reduce by nearly forty percent.',
+      },
+    ],
+    'business-tech': [
+      {
+        headline: 'RBI Holds Benchmark Repo Rate at 6.5% Amid Robust Industrial Expansion',
+        subHeadline: 'Monetary policy committee notes steady core inflation and buoyant capital capex',
+        snippet: 'The central bank maintained its withdrawal of accommodation stance while reaffirming optimistic GDP projections driven by domestic manufacturing and resilient services demand.',
+      },
+      {
+        headline: 'Indian Tech Unicorns Accelerate Global Expansion With Record AI Dealflow',
+        subHeadline: 'Enterprise software startups secure multi-million-dollar global procurement contracts',
+        snippet: 'Domestic technology firms continue to outperform international peers in deploying specialized generative AI agents for Fortune 500 financial and healthcare operations.',
+      },
+      {
+        headline: 'Foreign Direct Investment Inflows Surge 18% in Core Manufacturing Sectors',
+        subHeadline: 'Production-linked incentive programs catalyze high-technology electronic clusters',
+        snippet: 'Official commerce data indicated that electronics, pharmaceuticals, and automotive components accounted for over two-thirds of greenfield investments this quarter.',
+      },
+      {
+        headline: 'Capital Markets Scale Fresh Peaks Driven by Domestic Retail Inflows',
+        subHeadline: 'Benchmark indices gain for fourth consecutive session as institutional buying persists',
+        snippet: 'Systematic investment plans reached record monthly contributions, providing sustained liquidity across mid-cap and large-cap industrial equities.',
+      },
+      {
+        headline: 'Commercial EV Registrations Cross 25% Fleet Milestone Across Tier-1 Cities',
+        subHeadline: 'Logistics operators ramp up electric conversions to achieve sustainability targets',
+        snippet: 'Fast-charging infrastructure expansion and operating cost benefits drove unprecedented adoption of zero-emission light commercial vehicles in metropolitan hubs.',
+      },
+    ],
+    sports: [
+      {
+        headline: 'India Dominates Opening Day in Melbourne With Commanding 342/3 Total',
+        subHeadline: 'Top-order pair register twin centuries as host bowling attack struggles under overcast skies',
+        snippet: 'A masterclass in application and timing saw the national team seize absolute control of the series opener, withstanding early seam movement before dictating terms after lunch.',
+      },
+      {
+        headline: 'National Badminton Prodigies Clinch Twin Titles at Denmark Open Super 750',
+        subHeadline: 'Stunning straight-game victories over top seeds cap remarkable European tour',
+        snippet: 'The young duo displayed exceptional court coverage and tactical maturity to claim the biggest tournament victory of their blossoming senior international careers.',
+      },
+      {
+        headline: 'ISL Football: Bengaluru FC Clinches Top Table Position With Home Victory',
+        subHeadline: 'Stoppage-time header secures crucial three points in front of enthusiastic home crowd',
+        snippet: 'An intensely contested tactical encounter was decided in the dying seconds, sending the stadium into wild celebrations and cementing the hosts title credentials.',
+      },
+      {
+        headline: 'World Chess Olympiad: Indian Contingent Takes Commanding Gold Lead',
+        subHeadline: 'Flawless individual performances seal whitewash victory over defending champions',
+        snippet: 'Displaying deep opening preparation and ruthless endgame execution, the national contingent extended their lead at the summit of the tournament standings.',
+      },
+      {
+        headline: 'Athletics Federation Confirms Record 48-Member Squad for World Championships',
+        subHeadline: 'Strong contingent across javelin, steeplechase, and relay disciplines eyes podium finishes',
+        snippet: 'Intensive high-altitude training camps concluded successfully as coaches expressed immense optimism regarding multiple medal prospects in European conditions.',
+      },
+    ],
+    'education-science': [
+      {
+        headline: 'ISRO Unveils Heavy-Lift Reusable Launch Vehicle for Deep Space Missions',
+        subHeadline: 'Autonomous runway recovery and methane-liquid oxygen propulsion validated in ground tests',
+        snippet: 'Space scientists achieved a crucial technological milestone that will drastically reduce payload launch costs for planned lunar base infrastructure and orbital laboratories.',
+      },
+      {
+        headline: 'National Research Foundation Disburses ₹8,000-cr Interdisciplinary Lab Grants',
+        subHeadline: 'Funding targets quantum computing, climate genomics, and advanced materials',
+        snippet: 'Over four hundred university laboratories received multi-year endowments aimed at bridging academic research breakthroughs with commercial industrial deployment.',
+      },
+      {
+        headline: 'Indigenous Quantum Computing Facility Achieves 100-Qubit Coherence Record',
+        subHeadline: 'Cryogenic quantum processor demonstrates fault-tolerant error correction protocols',
+        snippet: 'Researchers hailed the breakthrough as a vital stepping stone toward sovereign quantum computing capabilities for defense and cryptographic applications.',
+      },
+      {
+        headline: 'Higher Education Accreditation Overhaul Ties Funding to Research Outputs',
+        subHeadline: 'New assessment framework incentivizes patent filings, peer citations, and industry tie-ups',
+        snippet: 'The academic regulatory council launched a transparent digital evaluation matrix to benchmark state and central universities against global standards.',
+      },
+      {
+        headline: 'Biotechnology Mission Announces Phase-3 Clinical Trials for Dengue Vaccine',
+        subHeadline: 'Indigenous quadrivalent candidate exhibits robust neutralizing antibody responses',
+        snippet: 'Multicentric trials involving thirty thousand volunteers will assess protective efficacy before planned national immunization rollout next year.',
+      },
+    ],
+    'entertainment-lifestyle': [
+      {
+        headline: 'Indian Cinematic Renaissance Dazzles Global Critics at Venice Biennale',
+        subHeadline: 'Independent regional drama receives standing ovation and prestigious jury accolade',
+        snippet: 'Captivating audiences with poignant human storytelling and breathtaking rural cinematography, the film marked a triumphant moment for contemporary Indian independent cinema.',
+      },
+      {
+        headline: 'Triennial National Crafts Biennale Opens at Historic Red Fort Pavilions',
+        subHeadline: 'Over 300 master artisans showcase vanishing weaving, pottery, and metalwork traditions',
+        snippet: 'Curators emphasized the economic vitalization of hereditary craft clusters through contemporary design collaborations and direct fair-trade retail access.',
+      },
+      {
+        headline: 'Heritage Architecture Foundation Restores 14 Century-Old Stepwells',
+        subHeadline: 'Ancient water harvesting structures revived as vibrant cultural community hubs',
+        snippet: 'A dedicated team of stone conservators and hydrologists completed the multi-year conservation project, blending historical masonry with modern ecological restoration.',
+      },
+      {
+        headline: 'Independent Cinema Movement Secures Global Streaming Distribution Pacts',
+        subHeadline: 'Regional language films find unprecedented viewership across international markets',
+        snippet: 'Digital platforms reported record subscriber engagement with multilingual subtitled cinema, proving universal resonance for authentic local narratives.',
+      },
+      {
+        headline: 'Indigenous Regional Cuisine Celebrated at International Culinary Congress',
+        subHeadline: 'Michelin-starred chefs explore traditional millet fermentation and spice preservation',
+        snippet: 'Culinary experts highlighted the holistic nutritional philosophy and ecological sustainability of ancient Indian culinary sciences during live cooking demonstrations.',
+      },
+    ],
+    'opinion-features': [
+      {
+        headline: 'Editorial: A Stronger, More Resilient India Is Well Within Our Reach',
+        subHeadline: 'Strategic self-reliance must walk hand in hand with institutional equity and social trust',
+        snippet: 'As our nation navigates complex global realignments and technological frontiers, the durability of our growth will depend fundamentally on the strength of our democratic institutions and inclusive opportunities.',
+      },
+      {
+        headline: 'Guest Column: Demographic Dividend and the Imperative for High-Tech Skills',
+        subHeadline: 'Equipping our young workforce with artificial intelligence and engineering mastery',
+        snippet: 'India stands at an unprecedented demographic juncture. Translating this human potential into lasting prosperity requires an agile, industry-aligned higher education revolution.',
+      },
+      {
+        headline: 'Perspective: Reimagining Federalism in the Age of High-Speed Digital Public Infra',
+        subHeadline: 'Collaborative governance models foster competitive yet cooperative nation-building',
+        snippet: 'Digital public goods have unified our financial and administrative geography. Now, federal policy must empower states to tailor implementation to regional aspirations.',
+      },
+      {
+        headline: 'Special Essay: Preserving Our Ecological Heritage Amid Rapid Industrialization',
+        subHeadline: 'Balancing economic growth imperatives with sacred reverence for nature',
+        snippet: 'True development cannot be measured in concrete alone. Sustainable growth demands that our rivers, forests, and biodiversity remain central to our urban masterplans.',
+      },
+      {
+        headline: 'Voices: Youth Entrepreneurship as the Engine of Bharat’s Transformation',
+        subHeadline: 'How tier-2 and tier-3 innovators are solving grassroots challenges at scale',
+        snippet: 'From agro-tech in Vidarbha to healthcare logistics in the Northeast, young founders are rewriting the Indian economic narrative with courage and ingenuity.',
+      },
+    ],
+  };
+
+  const catKey = (category || 'politics').toLowerCase();
+  const matchedKey = Object.keys(defaults).find((k) => catKey.includes(k)) || 'politics';
+  const catList = defaults[matchedKey] || defaults.politics;
+
+  return catList.map((item, idx) => ({
+    id: `p${pageNum}-art-${idx + 1}`,
+    headline: item.headline,
+    subHeadline: item.subHeadline,
+    content: item.snippet,
+    imageUrl: getCategoryFallbackImage(category as any),
+    category: category as any,
+    source: idx === 0 ? 'Special Correspondent' : 'Staff Reporter',
+    date: pubDate,
+    keyHighlights: idx === 0 ? [
+      'Landmark statutory and policy framework finalized',
+      'Unanimous stakeholder consensus reached across core bodies',
+      'Strategic capital commitments allocated for phased rollout',
+      'Pilot implementations commence across seven regional hubs',
+    ] : undefined,
+    pullQuote: idx === 0 ? 'A foundational milestone that anchors long-term resilience and progress.' : undefined,
+  }));
 }
 
 // ─── Page Dispatcher & Construction ──────────────────────────────────────────
@@ -598,44 +971,16 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
     }
   });
 
-  // Fallback defaults if slots are unassigned
+  // Guarantee at least 5 rich category-specific articles per page
+  const defaultCategoryArticles = getDefaultCategoryArticles(page.category, pageNum, pub.date);
   if (articles.length === 0) {
-    articles.push({
-      id: `p${pageNum}-lead`,
-      headline: isP1 ? 'India Launches Ambitious Mission to Strengthen Global Space Presence' : `${page.categoryLabel} Strategic Framework Announced`,
-      subHeadline: 'Comprehensive policy initiatives drive unprecedented expansion across core national sectors',
-      content: 'New Delhi: Senior officials on Monday ratified a landmark policy architecture designed to accelerate indigenous technological capabilities and strategic research infrastructure. The program represents a coordinated multi-sector roadmap with extensive capital commitments.\nIndustry representatives praised the long-term clarity provided by the regulatory provisions, noting that international research collaborations and domestic manufacturing hubs are poised to benefit substantially.\nImplementation begins immediately with pilot operations scheduled across seven designated hubs before nationwide integration next quarter.',
-      imageUrl: getCategoryFallbackImage(page.category),
-      imageCaption: 'Delegates and strategic partners review implementation timelines at the national conclave.',
-      category: page.category,
-      source: 'Special Correspondent',
-      date: pub.date,
-      keyHighlights: [
-        'Multi-decade technology modernization roadmap ratified',
-        'State-of-the-art climate observation and satellite systems',
-        'Direct partnerships with premier international institutions',
-        'Substantial boost for local manufacturing and high-tech supply chains',
-      ],
-      pullQuote: 'A historic transformation that sets the benchmark for decades to come.',
-    });
-  }
-
-  // Ensure at least 4 articles for full layout presentation
-  while (articles.length < 4) {
-    const idx = articles.length + 1;
-    articles.push({
-      id: `p${pageNum}-art-${idx}`,
-      headline: idx === 2
-        ? 'Bilateral Strategic Dialogues Signal Robust Economic Alignment'
-        : idx === 3
-        ? 'Climate Initiatives Gain Ground as Renewable Capacities Expand'
-        : 'Capital Markets Touch New Highs Led by Domestic Institutions',
-      content: 'Delegates reaffirmed strong commitments toward mutual cooperation during high-level working sessions in the capital, focusing on trade facilitation and infrastructure modernization.\nBoth sides expressed confidence that ongoing regulatory revisions will streamline investments and foster sustainable industrial growth.',
-      imageUrl: getCategoryFallbackImage(page.category),
-      category: page.category,
-      source: 'Staff Reporter',
-      date: pub.date,
-    });
+    articles.push(...defaultCategoryArticles);
+  } else {
+    let defIdx = articles.length;
+    while (articles.length < 5 && defIdx < defaultCategoryArticles.length) {
+      articles.push(defaultCategoryArticles[defIdx]);
+      defIdx++;
+    }
   }
 
   let html = '';
@@ -664,26 +1009,27 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
       <!-- Secondary Row: 3 Equal Columns Across Full Page Width -->
       <div class="fp-secondary-grid">
         <div class="fp-sec-col">
-          ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2')}
+          ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2', { thumbHeight: '34mm', minWords: 60 })}
         </div>
         <div class="col-divider" style="border-right: 0.5pt solid ${theme.columnRuleColor};"></div>
         <div class="fp-sec-col">
-          ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 3')}
+          ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 3', { thumbHeight: '34mm', minWords: 60 })}
         </div>
         <div class="col-divider" style="border-right: 0.5pt solid ${theme.columnRuleColor};"></div>
         <div class="fp-sec-col">
-          ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4')}
+          ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4', { thumbHeight: '34mm', minWords: 60 })}
         </div>
       </div>
 
       <!-- Bottom Briefs Strip anchored at page bottom -->
-      ${renderBriefStrip(page.briefs, 'FRONT PAGE', theme)}
+      ${renderBriefStrip(page.briefs, 'front-page', 'FRONT PAGE', theme)}
     `;
     return html;
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // INNER PAGES (PAGES 2 TO 8)
+  // INNER PAGES (PAGES 2 TO 8): COMPLETE 3-TIER BROADSHEET ARCHITECTURE
+  // Fills 100% of printable height with zero empty voids
   // ══════════════════════════════════════════════════════════════════════════
   html += renderCategoryStrip(page, theme, pageNum);
 
@@ -691,30 +1037,105 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
     case 'politics': {
       const pLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
+        <!-- Tier 1: Politics Hero Row (Lead Story 68% + Focus Story 32%) -->
         <div class="inner-hero-row">
           <div class="ih-col-large">
             <article class="inner-lead">
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
               ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
               <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-                BY ${articles[0].source.toUpperCase()} &nbsp;|&nbsp; ${shortDate(pub.date)}
+                BY ${(articles[0].source || 'SPECIAL CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'politics') || getCategoryFallbackImage('politics')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${pLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
-                ${renderPullQuote(articles[0].pullQuote || 'People want development, transparency and real change.', theme)}
+                ${renderPullQuote(articles[0].pullQuote || 'Democracy and representative governance thrive on constructive legislative deliberation.', theme)}
               </div>
             </article>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2')}
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
           </div>
         </div>
+
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0 2px 0;"></div>
+
+        <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
+        <div class="fp-secondary-grid">
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+        </div>
+
+        <!-- Tier 3: State Roundup 4-Card Strip -->
         ${renderStateRoundup(theme)}
-        ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
+      `;
+      break;
+    }
+
+    case 'international': {
+      const iLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
+      html += `
+        <!-- Tier 1: International Hero Row (World Lead 68% + Diplomatic Dispatch 32%) -->
+        <div class="inner-hero-row">
+          <div class="ih-col-large">
+            <article class="inner-lead">
+              <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
+              ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
+              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
+                BY DIPLOMATIC CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
+              </div>
+              <div class="ih-media">
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'international') || getCategoryFallbackImage('international')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+              </div>
+              <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
+                ${iLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+                ${renderPullQuote(articles[0].pullQuote || 'Multilateralism remains the essential anchor for global security and sustainable trade.', theme)}
+              </div>
+            </article>
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="ih-col-side">
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 3', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+          </div>
+        </div>
+
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0 2px 0;"></div>
+
+        <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
+        <div class="fp-secondary-grid">
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+        </div>
+
+        <!-- Tier 3: World in Focus 4-Card Strip -->
+        ${renderWorldInFocus(theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
       `;
       break;
     }
@@ -722,10 +1143,12 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
     case 'business-tech': {
       const bLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
+        <!-- Tier 1: Business Hero Row (Financial Lead + Key Indicators + Side Story) -->
         <div class="inner-hero-row">
           <div class="ih-col-large">
             <article class="inner-lead">
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
+              ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
               <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
                 BY FINANCIAL BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
@@ -734,24 +1157,94 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${bLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+                ${renderPullQuote(articles[0].pullQuote || 'Fiscal stability and structural reforms are providing high resilience to capital flows.', theme)}
               </div>
             </article>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
             ${renderKeyIndicatorsWidget(null, theme)}
-            <div style="margin-top: 6px;">
-              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 4')}
+            <div style="margin-top: 4px;">
+              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 4', { thumbHeight: '20mm', minWords: 40, headlineSize: '9.2pt' })}
             </div>
           </div>
         </div>
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
+
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0 2px 0;"></div>
+
+        <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
-          <div class="fp-sec-col">${renderSecondaryStory(articles[2], theme, pub.date, 'Page 4')}</div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
-          <div class="fp-sec-col">${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4')}</div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
         </div>
-        ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
+
+        <!-- Tier 3: Industry & Sector Pulse 4-Card Strip -->
+        ${renderCorporatePulse(theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
+      `;
+      break;
+    }
+
+    case 'education-science': {
+      const eLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
+      html += `
+        <!-- Tier 1: Sci-Tech Hero Row (Science Lead 68% + University Spotlight 32%) -->
+        <div class="inner-hero-row">
+          <div class="ih-col-large">
+            <article class="inner-lead">
+              <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
+              ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
+              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
+                BY SCIENCE CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
+              </div>
+              <div class="ih-media">
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education') || getCategoryFallbackImage('education-science')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+              </div>
+              <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
+                ${eLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+                ${renderPullQuote(articles[0].pullQuote || 'Scientific self-reliance and basic research are the foundational pillars of our national mission.', theme)}
+              </div>
+            </article>
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="ih-col-side">
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 5', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+          </div>
+        </div>
+
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0 2px 0;"></div>
+
+        <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
+        <div class="fp-secondary-grid">
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+        </div>
+
+        <!-- Tier 3: Discovery & Innovation 4-Card Strip -->
+        ${renderSciTechRoundup(theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
       `;
       break;
     }
@@ -759,10 +1252,12 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
     case 'sports': {
       const sLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
+        <!-- Tier 1: Sports Hero Row (Match Lead + Player Stats Card + Side Story) -->
         <div class="inner-hero-row">
           <div class="ih-col-large">
             <article class="inner-lead">
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
+              ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
               <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
                 BY SPORTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
@@ -771,24 +1266,94 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${sLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+                ${renderPullQuote(articles[0].pullQuote || 'A masterclass in resilience and tactical perfection under championship pressure.', theme)}
               </div>
             </article>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
             ${renderSportsStatCard(theme)}
-            <div style="margin-top: 6px;">
-              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 6')}
+            <div style="margin-top: 4px;">
+              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 6', { thumbHeight: '20mm', minWords: 40, headlineSize: '9.2pt' })}
             </div>
           </div>
         </div>
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
+
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0 2px 0;"></div>
+
+        <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
-          <div class="fp-sec-col">${renderSecondaryStory(articles[2], theme, pub.date, 'Page 6')}</div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
-          <div class="fp-sec-col">${renderSecondaryStory(articles[3], theme, pub.date, 'Page 6')}</div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
         </div>
-        ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
+
+        <!-- Tier 3: Scoreboard 4-Card Strip -->
+        ${renderSportsScoreboard(theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
+      `;
+      break;
+    }
+
+    case 'entertainment-lifestyle': {
+      const entLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
+      html += `
+        <!-- Tier 1: Entertainment Hero Row (Cinema/Arts Lead 68% + Spotlight 32%) -->
+        <div class="inner-hero-row">
+          <div class="ih-col-large">
+            <article class="inner-lead">
+              <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
+              ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
+              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
+                BY CULTURE & ARTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
+              </div>
+              <div class="ih-media">
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'entertainment') || getCategoryFallbackImage('entertainment-lifestyle')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+              </div>
+              <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
+                ${entLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+                ${renderPullQuote(articles[0].pullQuote || 'Authentic regional stories carry a deeply universal human emotional resonance.', theme)}
+              </div>
+            </article>
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="ih-col-side">
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 7', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+          </div>
+        </div>
+
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0 2px 0;"></div>
+
+        <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
+        <div class="fp-secondary-grid">
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+        </div>
+
+        <!-- Tier 3: Cultural Mosaic 4-Card Strip -->
+        ${renderCultureRoundup(theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
       `;
       break;
     }
@@ -797,34 +1362,35 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
       const edLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       const colLead = buildFullLeadStoryParagraphs(articles[1].content, articles[1].headline);
       html += `
-        <div class="inner-hero-row">
+        <!-- Tier 1: Editorial (Left 50%) + Guest Column (Right 50%) -->
+        <div class="inner-hero-row" style="margin-bottom: 2px;">
           <div class="ih-col-half">
             <div class="op-badge" style="background:${theme.accentColor === '#0a0a0a' ? '#991b1b' : theme.accentColor}; color:#fff; font-family:${theme.uiFont};">EDITORIAL</div>
-            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:13.5pt;">A Stronger, More Inclusive India Is Within Reach</h3>
+            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:13pt; line-height:1.12; margin-bottom:2px;">A Stronger, More Resilient India Is Well Within Our Reach</h3>
             <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
               THE CHRONICLE EDITORIAL BOARD &nbsp;|&nbsp; ${shortDate(pub.date)}
             </div>
-            <div class="op-body" style="column-count:2; column-gap:8px; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-              ${edLead.slice(0, 3).map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+            <div class="op-body" style="column-count:2; column-gap:8px; column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor}; font-size:7.2pt; line-height:1.26; text-align:justify;">
+              ${edLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}" style="margin-bottom:3px; text-indent:${idx === 0 ? '0' : '8px'};">${p}</p>`).join('')}
             </div>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-half">
             <div class="op-badge" style="background:${theme.accentColor === '#0a0a0a' ? '#1f2937' : theme.accentColor}; color:#fff; font-family:${theme.uiFont};">GUEST COLUMN</div>
-            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:13.5pt;">The Role of Youth in Shaping India's Future</h3>
+            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:13pt; line-height:1.12; margin-bottom:2px;">The Role of Youth & Tech in Shaping India's Future</h3>
             <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
               BY RAJESH MISHRA &nbsp;|&nbsp; SENIOR FELLOW, POLICY FORUM
             </div>
-            <div class="op-body" style="column-count:2; column-gap:8px; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-              ${colLead.slice(0, 3).map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+            <div class="op-body" style="column-count:2; column-gap:8px; column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor}; font-size:7.2pt; line-height:1.26; text-align:justify;">
+              ${colLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}" style="margin-bottom:3px; text-indent:${idx === 0 ? '0' : '8px'};">${p}</p>`).join('')}
             </div>
           </div>
         </div>
 
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:2px 0 3px 0;"></div>
 
-        <!-- 3 Feature Widgets Row -->
-        <div class="fp-secondary-grid">
+        <!-- Tier 2: 3 Feature Widgets Row (Horoscope + Sudoku + Weather) -->
+        <div class="fp-secondary-grid" style="margin:2px 0 3px 0;">
           <div class="fp-sec-col">${renderHoroscopeWidget(theme)}</div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">${renderSudokuWidget(null, theme)}</div>
@@ -832,9 +1398,11 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           <div class="fp-sec-col">${renderWeatherWidget(null, theme)}</div>
         </div>
 
-        <!-- Authentic Comics Strip -->
+        <!-- Tier 3: Authentic Comics Strip -->
         ${renderComicsStrip(theme)}
-        ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
       `;
       break;
     }
@@ -842,6 +1410,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
     default: {
       const defLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
+        <!-- Tier 1: Hero Row -->
         <div class="inner-hero-row">
           <div class="ih-col-large">
             <article class="inner-lead">
@@ -855,21 +1424,38 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${defLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
+                ${renderPullQuote(articles[0].pullQuote || 'A strategic initiative setting lasting benchmarks for the future.', theme)}
               </div>
             </article>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderSecondaryStory(articles[1], theme, pub.date, `Page ${pageNum}`)}
+            ${renderSecondaryStory(articles[1], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
           </div>
         </div>
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
+
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0 2px 0;"></div>
+
+        <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
-          <div class="fp-sec-col">${renderSecondaryStory(articles[2], theme, pub.date, `Page ${pageNum}`)}</div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[2], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55 })}
+          </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
-          <div class="fp-sec-col">${renderSecondaryStory(articles[3], theme, pub.date, `Page ${pageNum}`)}</div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[3], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55 })}
+          </div>
+          <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
+          <div class="fp-sec-col">
+            ${renderSecondaryStory(articles[4], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55 })}
+          </div>
         </div>
-        ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
+
+        <!-- Tier 3: Feature Strip -->
+        ${renderStateRoundup(theme)}
+
+        <!-- Tier 4: Bottom Briefs Strip -->
+        ${renderBriefStrip(page.briefs, page.category, page.categoryLabel, theme)}
       `;
       break;
     }
@@ -1261,7 +1847,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       display: flex;
       gap: 0;
       align-items: stretch;
-      margin: 3px 0 2px 0;
+      margin: 2px 0 2px 0;
       flex-shrink: 0;
     }
     .fp-sec-col {
@@ -1282,18 +1868,18 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       height: 100%;
     }
     .sec-story-hl {
-      font-size: 10.2pt;
+      font-size: 9.6pt;
       font-weight: 800;
-      line-height: 1.14;
+      line-height: 1.15;
       letter-spacing: -0.2px;
-      margin-bottom: 2px;
+      margin-bottom: 1.5px;
     }
     .sec-img-wrap {
-      margin: 2px 0;
+      margin: 1.5px 0;
     }
     .sec-thumb {
       width: 100%;
-      height: 34mm;
+      height: 28mm;
       object-fit: cover;
       display: block;
     }
@@ -1301,18 +1887,18 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       font-size: 5pt;
       font-weight: 700;
       letter-spacing: 0.4px;
-      margin-bottom: 2px;
+      margin-bottom: 1.5px;
     }
     .sec-body {
-      font-size: 7.2pt;
-      line-height: 1.25;
+      font-size: 7.0pt;
+      line-height: 1.24;
       text-align: justify;
       hyphens: auto;
-      margin: 2px 0;
+      margin: 1.5px 0;
       overflow: hidden;
     }
     .sec-jump {
-      font-size: 5.5pt;
+      font-size: 5.2pt;
       font-weight: 700;
       text-align: right;
       margin-top: auto;
@@ -1323,6 +1909,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .briefs-strip {
       margin-top: auto;
       flex-shrink: 0;
+      padding-top: 2px;
     }
     .bs-tag {
       font-size: 6pt;
@@ -1368,7 +1955,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .inner-hero-row {
       display: flex;
       gap: 0;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       align-items: stretch;
     }
     .ih-col-large {
@@ -1396,29 +1983,29 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       flex-direction: column;
     }
     .inner-hl-main {
-      font-size: 15.5pt;
+      font-size: 14.5pt;
       font-weight: 900;
       line-height: 1.08;
       letter-spacing: -0.3px;
-      margin-bottom: 2px;
+      margin-bottom: 1.5px;
     }
     .inner-photo {
       width: 100%;
-      height: 42mm;
+      height: 40mm;
       object-fit: cover;
       display: block;
-      margin: 2px 0;
+      margin: 1.5px 0 2px 0;
     }
     .inner-3col-body {
       column-count: 3;
       column-gap: 8px;
       text-align: justify;
-      font-size: 7.4pt;
-      line-height: 1.26;
+      font-size: 7.2pt;
+      line-height: 1.25;
       overflow: hidden;
     }
     .inner-3col-body p {
-      margin-bottom: 3px;
+      margin-bottom: 2.5px;
       text-indent: 10px;
     }
     .inner-3col-body p.first-paragraph {
@@ -1427,46 +2014,50 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
 
     /* ── Pull Quote ─────────────────────────────────────────────── */
     .pull-quote {
-      margin: 3px 0;
-      padding: 3px 0;
+      margin: 2px 0;
+      padding: 2.5px 0;
       text-align: center;
       break-inside: avoid;
     }
     .pq-text {
-      font-size: 8.5pt;
+      font-size: 8pt;
       font-style: italic;
       font-weight: 600;
-      line-height: 1.25;
+      line-height: 1.2;
       margin: 0;
       text-indent: 0 !important;
     }
     .pq-attr {
-      font-size: 5.5pt;
+      font-size: 5.2pt;
       font-weight: 700;
       letter-spacing: 0.5px;
-      margin-top: 2px;
+      margin-top: 1.5px;
     }
 
-    /* ── State Roundup (Page 2) ─────────────────────────────────── */
+    /* ── Feature Strip (State Roundup / World / Corporate / SciTech / Arena / Mosaic) ── */
     .state-roundup-container {
-      margin: 2px 0 3px 0;
+      margin: 2px 0;
       flex-shrink: 0;
     }
     .sru-header {
-      font-size: 6.5pt;
+      font-size: 6.2pt;
       font-weight: 800;
-      letter-spacing: 1.2px;
-      padding: 2.5px 6px;
+      letter-spacing: 1.1px;
+      padding: 2.2px 6px;
       line-height: 1;
     }
     .sru-grid {
       display: flex;
       gap: 0;
-      padding: 3px 0;
+      padding: 2.5px 0 1px 0;
+      align-items: stretch;
     }
     .sru-card {
       flex: 1;
       padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
     }
     .sru-card:first-child { padding-left: 0; }
     .sru-card:last-child { padding-right: 0; }
@@ -1478,15 +2069,24 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       margin-bottom: 1px;
     }
     .sru-hl {
-      font-size: 7.5pt;
+      font-size: 7.2pt;
       font-weight: 700;
-      line-height: 1.15;
+      line-height: 1.14;
+      margin-bottom: 1.5px;
+    }
+    .sru-summary {
+      font-size: 6.2pt;
+      line-height: 1.18;
       margin-bottom: 2px;
+      opacity: 0.88;
+      text-align: justify;
+      overflow: hidden;
     }
     .sru-tag {
       display: block;
       font-size: 4.8pt;
       font-style: italic;
+      margin-top: auto;
     }
 
     /* ── Key Indicators (Page 4) ────────────────────────────────── */
