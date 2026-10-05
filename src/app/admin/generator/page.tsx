@@ -6,6 +6,7 @@ import PublicationIdentity from '@/components/dashboard/PublicationIdentity';
 import GlobalSettings from '@/components/dashboard/GlobalSettings';
 import AssetLibrary from '@/components/dashboard/AssetLibrary';
 import ContentGenerator from '@/components/dashboard/ContentGenerator';
+import ThemeSelector from '@/components/ThemeSelector';
 import { Button } from '@/components/ui/button';
 import {
   Newspaper,
@@ -16,19 +17,21 @@ import {
   FileOutput,
   ChevronRight,
   CheckCircle2,
+  Palette,
 } from 'lucide-react';
 import Link from 'next/link';
 
 const steps = [
-  { id: 0, label: 'Configure', icon: Settings, desc: 'Set up your publication' },
-  { id: 1, label: 'Assets', icon: ImageIcon, desc: 'Upload images & ads' },
-  { id: 2, label: 'Generate', icon: Sparkles, desc: 'AI content pipeline' },
-  { id: 3, label: 'Plan Layout', icon: Layout, desc: 'Arrange page layouts' },
-  { id: 4, label: 'Export PDF', icon: FileOutput, desc: 'Render & download' },
+  { id: 0, label: 'Theme',     icon: Palette,     desc: 'Pick newspaper style' },
+  { id: 1, label: 'Configure', icon: Settings,     desc: 'Set up your publication' },
+  { id: 2, label: 'Assets',    icon: ImageIcon,    desc: 'Upload images & ads' },
+  { id: 3, label: 'Generate',  icon: Sparkles,     desc: 'AI content pipeline' },
+  { id: 4, label: 'Plan Layout',icon: Layout,      desc: 'Arrange page layouts' },
+  { id: 5, label: 'Export PDF', icon: FileOutput,  desc: 'Render & download' },
 ];
 
 export default function DashboardPage() {
-  const { activeStep, setActiveStep, publication, generatedContent } =
+  const { activeStep, setActiveStep, publication, generatedContent, setTheme } =
     useAppStore();
 
   const hasContent =
@@ -78,27 +81,32 @@ export default function DashboardPage() {
       {/* Step Content Wrapper */}
       <div className="max-w-6xl mx-auto px-8 py-10">
         <div className="mx-auto">
+          {/* Step 0: Theme Selection */}
           {activeStep === 0 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <PublicationIdentity />
-                <GlobalSettings />
-              </div>
+              <ThemeSelector
+                selectedThemeId={publication.themeId || 'classic-broadsheet'}
+                onSelect={(id) => setTheme(id)}
+              />
               <div className="flex justify-end pt-4">
                 <Button
                   onClick={() => setActiveStep(1)}
                   className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-all font-bold h-12 px-8 rounded-xl text-base"
                 >
-                  Next: Upload Assets
+                  Next: Configure Publication
                   <ChevronRight className="h-5 w-5 ml-1" />
                 </Button>
               </div>
             </div>
           )}
 
+          {/* Step 1: Configure */}
           {activeStep === 1 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <AssetLibrary />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <PublicationIdentity />
+                <GlobalSettings />
+              </div>
               <div className="flex justify-between pt-4">
                 <Button
                   variant="outline"
@@ -111,7 +119,7 @@ export default function DashboardPage() {
                   onClick={() => setActiveStep(2)}
                   className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-all font-bold h-12 px-8 rounded-xl text-base"
                 >
-                  Next: Generate Content
+                  Next: Upload Assets
                   <ChevronRight className="h-5 w-5 ml-1" />
                 </Button>
               </div>
@@ -120,11 +128,33 @@ export default function DashboardPage() {
 
           {activeStep === 2 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <ContentGenerator />
+              <AssetLibrary />
               <div className="flex justify-between pt-4">
                 <Button
                   variant="outline"
                   onClick={() => setActiveStep(1)}
+                  className="border-slate-200 text-slate-600 hover:bg-slate-50 font-bold h-12 px-8 rounded-xl"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={() => setActiveStep(3)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-all font-bold h-12 px-8 rounded-xl text-base"
+                >
+                  Next: Generate Content
+                  <ChevronRight className="h-5 w-5 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {activeStep === 3 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <ContentGenerator />
+              <div className="flex justify-between pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setActiveStep(2)}
                   className="border-slate-200 text-slate-600 hover:bg-slate-50 font-bold h-12 px-8 rounded-xl"
                 >
                   Back
@@ -139,7 +169,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {activeStep === 3 && (
+          {activeStep === 4 && (
             <div className="space-y-6 text-center py-12">
               <Layout className="h-16 w-16 mx-auto text-blue-500" />
               <h2 className="text-xl font-bold text-slate-900">
@@ -161,7 +191,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {activeStep === 4 && (
+          {activeStep === 5 && (
             <div className="space-y-6 text-center py-12">
               <FileOutput className="h-16 w-16 mx-auto text-blue-500" />
               <h2 className="text-xl font-bold text-slate-900">

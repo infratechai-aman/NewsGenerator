@@ -46,7 +46,7 @@ async function generateArticles(language: string, pageCount: number, targetLocat
 
       const result = await generateWithAI(
         `You are a professional newspaper journalist. Write an article based on the news source material. ${langInstruction} ${wordCountRule} Do NOT write less than the requested word count, or the layout gaps will be huge. Content Rules: targeted for readers ${locString}.`,
-        `Based on these recent news items about "${topic}":\n${newsContext}\n\nWrite a compelling but strict newspaper article. Return JSON with:\n{\n  "headline": "A powerful, attention-grabbing headline (max 12 words)",\n  "content": "A detailed article of exactly 100-150 words",\n  "category": "The news category",\n  "imageCaption": "A brief caption for the article's image (max 15 words)"\n}`
+        `Based on these recent news items about "${topic}":\n${newsContext}\n\nWrite a compelling but strict newspaper article. Return JSON with:\n{\n  "headline": "A powerful, attention-grabbing headline (max 12 words)",\n  "subHeadline": "An insightful secondary headline deck (10-15 words)",\n  "content": "A detailed article of exactly 100-150 words in 2-3 paragraphs",\n  "category": "The news category",\n  "pullQuote": "A striking 10-15 word quotation or memorable takeaway from the article",\n  "keyHighlights": ["Key development 1", "Key development 2", "Key development 3"],\n  "imageCaption": "A brief caption for the article's image (max 15 words)"\n}`
       );
 
       const parsed = JSON.parse(result);
@@ -70,6 +70,7 @@ async function generateArticles(language: string, pageCount: number, targetLocat
       articles.push({
         id: uuidv4(),
         headline: parsed.headline,
+        subHeadline: parsed.subHeadline || undefined,
         content: parsed.content,
         images: articleImages,
         imageUrl: articleImages[0]?.url || null,
@@ -77,6 +78,8 @@ async function generateArticles(language: string, pageCount: number, targetLocat
         category: parsed.category || topic,
         source: news[0]?.source || 'Staff Reporter',
         date: new Date().toISOString(),
+        pullQuote: parsed.pullQuote || undefined,
+        keyHighlights: Array.isArray(parsed.keyHighlights) ? parsed.keyHighlights : undefined,
       });
 
       // Avoid image scraping rate limits
@@ -208,6 +211,26 @@ async function generateTvGuide(language: string, targetLocation: string) {
   return { id: uuidv4(), ...JSON.parse(result) };
 }
 
+async function generateKeyIndicators(language: string) {
+  const langInstruction = LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english;
+  const result = await generateWithAI(
+    `You are a financial desk editor for an Indian broadsheet newspaper. Provide realistic, current financial market indicators. ${langInstruction}`,
+    `Generate the latest financial indicators for Indian markets. Include Sensex, Nifty 50, USD/INR, Gold (10g), Brent Crude, and 10Y G-Sec. Return JSON:
+{
+  "indicators": [
+    { "name": "SENSEX", "value": "82,490.15", "change": "+412.30", "direction": "up" },
+    { "name": "NIFTY 50", "value": "25,235.90", "change": "+128.45", "direction": "up" },
+    { "name": "USD / INR", "value": "83.92", "change": "-0.04", "direction": "down" },
+    { "name": "GOLD (10g)", "value": "₹76,450", "change": "+320.00", "direction": "up" },
+    { "name": "BRENT CRUDE", "value": "$74.18/bbl", "change": "-0.85", "direction": "down" },
+    { "name": "10Y G-SEC", "value": "6.82%", "change": "-0.02", "direction": "down" }
+  ]
+}`
+  );
+  const parsed = JSON.parse(result);
+  return { id: uuidv4(), indicators: parsed.indicators };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { type, language, pageCount, targetLocation, articleCount } = await req.json();
@@ -245,6 +268,10 @@ export async function POST(req: NextRequest) {
         break;
       case 'tv-guide':
         content = await generateTvGuide(language, targetLocation);
+        break;
+      case 'key-indicators':
+      case 'keyIndicators':
+        content = await generateKeyIndicators(language);
         break;
       default:
         return NextResponse.json(

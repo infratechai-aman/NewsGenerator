@@ -63,6 +63,13 @@ const contentTypes = [
     icon: Megaphone,
     color: 'from-indigo-500 to-violet-500',
   },
+  {
+    id: 'keyIndicators',
+    label: 'Key Market Indicators',
+    desc: 'Sensex, Nifty, USD/INR, Gold, Crude & Bond rates',
+    icon: Grid3X3,
+    color: 'from-emerald-600 to-green-500',
+  },
 ];
 
 export default function ContentGenerator() {

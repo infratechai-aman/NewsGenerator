@@ -26,11 +26,13 @@ import {
   History,
   CloudSun,
   Tv,
+  Palette,
 } from 'lucide-react';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
 import { sanitizeImageUrl, getCategoryFallbackImage } from '@/lib/images';
 import { buildNewspaperHTML } from '@/lib/newspaper-template';
+import { NEWSPAPER_THEMES, getThemeById } from '@/lib/themes';
 
 const typeIcons: Record<ContentBlockType, React.ComponentType<{ className?: string }>> = {
   article: Newspaper,
@@ -45,6 +47,7 @@ const typeIcons: Record<ContentBlockType, React.ComponentType<{ className?: stri
   history: History,
   weather: CloudSun,
   'tv-guide': Tv,
+  'key-indicators': Grid3X3,
 };
 
 const typeColors: Record<ContentBlockType, string> = {
@@ -60,6 +63,7 @@ const typeColors: Record<ContentBlockType, string> = {
   history: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
   weather: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
   'tv-guide': 'bg-violet-500/20 text-violet-400 border-violet-500/30',
+  'key-indicators': 'bg-green-500/20 text-green-400 border-green-500/30',
 };
 
 export default function PlannerPage() {
@@ -76,6 +80,7 @@ export default function PlannerPage() {
     saveToRepository,
     clearSession,
     updateArticleImage,
+    setTheme,
   } = useAppStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,6 +89,8 @@ export default function PlannerPage() {
   const [activePageIdx, setActivePageIdx] = useState(0);
   const [draggedBlock, setDraggedBlock] = useState<ContentBlock | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
+  const currentTheme = getThemeById(publication.themeId || 'classic-broadsheet');
 
   // Build content blocks from generated content and assets
   const contentBlocks: ContentBlock[] = [];
@@ -188,6 +195,15 @@ export default function PlannerPage() {
       type: 'tv-guide',
       title: 'TV Guide',
       data: generatedContent.tvGuide,
+    });
+  }
+
+  if (generatedContent.keyIndicators) {
+    contentBlocks.push({
+      id: generatedContent.keyIndicators.id,
+      type: 'key-indicators',
+      title: 'Key Market Indicators',
+      data: generatedContent.keyIndicators,
     });
   }
 
@@ -330,6 +346,21 @@ export default function PlannerPage() {
         <div className="max-w-full mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Page Planner Configuration</h1>
+            <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 text-xs">
+              <Palette className="h-3.5 w-3.5 text-blue-600" />
+              <span className="text-slate-500 font-semibold">Theme:</span>
+              <select
+                value={publication.themeId || 'classic-broadsheet'}
+                onChange={(e) => setTheme(e.target.value)}
+                className="bg-transparent font-bold text-slate-800 outline-none cursor-pointer text-xs"
+              >
+                {NEWSPAPER_THEMES.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -464,12 +495,42 @@ export default function PlannerPage() {
             <div className="max-w-3xl mx-auto">
               {/* Page frame */}
               <div className="bg-white rounded-lg shadow-xl shadow-slate-200/50 p-4 aspect-[210/297] relative border border-slate-200">
-                {/* Page header */}
-                <div className="text-center mb-3 border-b border-slate-200 pb-2">
-                  <p className="text-[9px] text-slate-500 font-serif uppercase tracking-widest font-semibold">
-                    PAGE {activePage?.pageNumber} — {publication.name} — {publication.date}
-                  </p>
-                </div>
+                {/* Page header banner: Masthead on Page 1, Category Strip on Inner Pages */}
+                {activePage?.pageNumber === 1 ? (
+                  <div className="mb-3 border-b-2 border-slate-900 pb-2">
+                    <div
+                      className="px-2 py-0.5 text-[8px] font-bold tracking-widest text-center uppercase text-white rounded-t"
+                      style={{ background: currentTheme.accentColor === '#000000' ? '#1e293b' : currentTheme.accentColor }}
+                    >
+                      TODAY • {publication.date || 'LATEST EDITION'} • {publication.edition || 'NATIONAL'}
+                    </div>
+                    <div className="flex items-center justify-between text-[7.5px] text-slate-500 border-b border-slate-200 py-0.5 font-sans">
+                      <span>VOL. {publication.volume || '18'} | NO. {publication.issue || '204'}</span>
+                      <span className="italic">{publication.tagline || 'Truth • Perspective'}</span>
+                      <span>{publication.price || '₹10'}</span>
+                    </div>
+                    <h1
+                      className="text-center font-bold text-slate-900 py-1 tracking-tight"
+                      style={{ fontFamily: currentTheme.mastheadFont, fontSize: '24px', lineHeight: 1 }}
+                    >
+                      {publication.name || 'THE DAILY CHRONICLE'}
+                    </h1>
+                  </div>
+                ) : (
+                  <div
+                    className="mb-3 px-3 py-1.5 flex items-center justify-between text-[8px] font-bold uppercase tracking-wider rounded"
+                    style={{ background: currentTheme.categoryHeaderBg, color: currentTheme.categoryHeaderText }}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="opacity-90">PAGE {activePage?.pageNumber}</span>
+                      <span>—</span>
+                      <span>{activePage?.categoryLabel || 'NEWS'}</span>
+                    </div>
+                    <span className="text-[7.5px] opacity-80 normal-case font-normal italic">
+                      {activePage?.categoryTagline || ''}
+                    </span>
+                  </div>
+                )}
 
                 {/* Slots grid */}
                 <div className="grid grid-cols-6 gap-3 h-[calc(100%-2.5rem)]">
@@ -568,6 +629,28 @@ export default function PlannerPage() {
                     );
                   })}
                 </div>
+
+                {/* Briefs Strip Preview at Bottom of Canvas */}
+                {activePage?.briefs && activePage.briefs.length > 0 && (
+                  <div className="mt-2 pt-1 border-t-2" style={{ borderColor: currentTheme.categoryHeaderBg }}>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide flex-shrink-0 rounded"
+                        style={{ background: currentTheme.categoryHeaderBg, color: currentTheme.categoryHeaderText }}
+                      >
+                        {activePage.categoryLabel.split('(')[0].trim().toUpperCase()} BRIEFS
+                      </span>
+                      <div className="flex-1 flex items-center gap-2 overflow-hidden text-[7px] text-slate-600 truncate">
+                        {activePage.briefs.slice(0, 4).map((b, bi) => (
+                          <span key={bi} className="truncate">
+                            <strong style={{ color: currentTheme.accentColor }}>{b.category}:</strong> {b.headline}
+                            {bi < Math.min(activePage.briefs.length, 4) - 1 && <span className="mx-1 text-slate-300">|</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
