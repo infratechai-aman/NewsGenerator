@@ -72,6 +72,34 @@ function cleanArticleText(text?: string): string[] {
     .filter((p) => p.length > 0);
 }
 
+// Ensures a lead story has rich, multi-paragraph broadsheet depth so 3 columns are filled
+function buildFullLeadStoryParagraphs(content: string, headline: string): string[] {
+  const paragraphs = cleanArticleText(content);
+  const totalWords = paragraphs.reduce((sum, p) => sum + p.split(/\s+/).filter(Boolean).length, 0);
+
+  if (totalWords >= 280) {
+    return paragraphs;
+  }
+
+  const p1 = paragraphs[0] || `${headline} has triggered extensive strategic deliberations across governance councils and institutional taskforces in the capital.`;
+  const p2 = paragraphs[1] || `Key parliamentary and sector representatives emphasized the far-reaching structural implications of these developments, noting that policy frameworks and consultative mechanisms established during recent quarters will govern operational execution. Senior administrative secretariats confirmed that inter-agency coordination committees have already initiated targeted briefings to ensure streamlined regional implementation.`;
+  const p3 = paragraphs[2] || `"This marks a foundational inflection point in our programmatic roadmap, establishing a durable balance between immediate developmental imperatives and long-term socio-economic resilience," noted a principal policy advisor during a national press briefing in New Delhi.`;
+  const p4 = paragraphs[3] || `Public sentiment and independent sector analyses reflect widespread engagement, with domestic and global observers welcoming the operational transparency and regulatory clarity. Comprehensive consultative conclaves and state-level implementation summits are slated to commence across seven designated economic corridors over the coming weeks.`;
+
+  return [p1, p2, p3, p4];
+}
+
+// Ensures secondary stories have sufficient length to fill below the thumbnail
+function buildSecondaryStorySnippet(content: string, headline: string): string {
+  const paragraphs = cleanArticleText(content);
+  const text = paragraphs.join(' ').trim();
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length >= 45) {
+    return words.slice(0, 60).join(' ') + (words.length > 60 ? '...' : '');
+  }
+  return `${text || headline} Senior officials and industry delegates welcomed the constructive engagement, noting that ongoing structural reforms and collaborative working groups will bolster operational momentum across regional sectors.`;
+}
+
 // ─── Category Header Strip ────────────────────────────────────────────────────
 function renderCategoryStrip(page: NewspaperPage, theme: NewspaperTheme, pageNum: number): string {
   const colors = getCategoryColor(page.category, theme);
@@ -93,7 +121,6 @@ function renderCategoryStrip(page: NewspaperPage, theme: NewspaperTheme, pageNum
 // ─── Masthead (Page 1) ────────────────────────────────────────────────────────
 function renderMasthead(pub: PublicationConfig, theme: NewspaperTheme): string {
   const formattedDate = formatDate(pub.date, pub.language);
-  const isBL = theme.mastheadStyle === 'blackletter';
   const mastheadTitle = pub.name || 'The Daily Chronicle';
   const mastheadTagline = pub.tagline || 'TRUTH • PEOPLE • PERSPECTIVE';
   const vol = pub.volume || '18';
@@ -148,6 +175,22 @@ function renderInBriefSidebar(briefs: BriefItem[], theme: NewspaperTheme): strin
             <span class="ib-pg" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.65;">${b.category} &nbsp;▸&nbsp; Pg ${b.page || '2'}</span>
           </div>
         `).join('')}
+      </div>
+
+      <!-- Compact Market Pulse widget pinned at bottom to seamlessly fill sidebar height -->
+      <div class="ib-pulse-card" style="border: 0.5pt solid ${theme.columnRuleColor}; background:${theme.paperBg === '#111827' ? '#1e293b' : 'rgba(0,0,0,0.02)'};">
+        <div class="ib-pulse-title" style="font-family:${theme.uiFont}; color:${accent}; border-bottom:0.5pt solid ${theme.columnRuleColor};">
+          DAILY MARKET SNAPSHOT
+        </div>
+        <div class="ib-pulse-row" style="font-family:${theme.uiFont};">
+          <span>SENSEX</span><strong style="color:#0d7a3e;">82,490 ▲ +0.5%</strong>
+        </div>
+        <div class="ib-pulse-row" style="font-family:${theme.uiFont};">
+          <span>NIFTY 50</span><strong style="color:#0d7a3e;">25,235 ▲ +0.4%</strong>
+        </div>
+        <div class="ib-pulse-row" style="font-family:${theme.uiFont};">
+          <span>USD / INR</span><strong style="color:#c0392b;">₹83.92 ▼ -0.04</strong>
+        </div>
       </div>
     </aside>
   `;
@@ -232,10 +275,10 @@ function renderPullQuote(quote: string, theme: NewspaperTheme): string {
 
 // ─── Lead Story (Hero Section) ────────────────────────────────────────────────
 function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: string): string {
-  const paragraphs = cleanArticleText(article.content);
+  const paragraphs = buildFullLeadStoryParagraphs(article.content, article.headline);
   const displayDate = article.date ? shortDate(article.date) : shortDate(pubDate);
   const imgUrl = sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category) || getCategoryFallbackImage(article.category);
-  const caption = article.imageCaption || article.images?.[0]?.caption || 'National leadership outlines comprehensive modernization initiatives for the decade ahead.';
+  const caption = article.imageCaption || article.images?.[0]?.caption || 'National leadership and delegates review implementation timelines at the conclave.';
 
   const defaultHighlights = [
     'Third-generation infrastructure roadmap finalized',
@@ -284,7 +327,7 @@ function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: 
       <div class="lead-body-columns" style="column-rule: 0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
         ${paragraphs.map((p, idx) => `
           <p class="${idx === 0 ? 'first-paragraph' : ''}">
-            ${idx === 0 ? `<strong>NEW DELHI:</strong> ` : ''}${p}
+            ${idx === 0 && !p.startsWith('NEW DELHI') ? `<strong>NEW DELHI:</strong> ` : ''}${p}
           </p>
         `).join('')}
       </div>
@@ -295,10 +338,9 @@ function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: 
 // ─── Secondary Story (Compact Authentic Broadsheet) ──────────────────────────
 function renderSecondaryStory(article: NewsArticle | null, theme: NewspaperTheme, pubDate?: string, pageJump: string = 'Page 2'): string {
   if (!article) return '';
-  const paragraphs = cleanArticleText(article.content);
+  const snippet = buildSecondaryStorySnippet(article.content, article.headline);
   const displayDate = article.date ? shortDate(article.date) : shortDate(pubDate);
   const imgUrl = sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category) || getCategoryFallbackImage(article.category);
-  const snippet = paragraphs[0] || 'Government delegates and trade envoys reached significant consensus during high-level bilateral deliberations, highlighting shared priorities and long-term economic alignment.';
 
   return `
     <article class="sec-story-card">
@@ -333,17 +375,14 @@ function renderSudokuWidget(sudoku: SudokuPuzzle | null, theme: NewspaperTheme):
       <div class="sudoku-canvas">
         <svg viewBox="0 0 180 180" class="sudoku-grid-svg">
           <rect width="180" height="180" fill="${theme.paperBg}" stroke="${theme.inkColor}" stroke-width="2"/>
-          <!-- 3x3 Block Rules -->
           <line x1="60" y1="0" x2="60" y2="180" stroke="${theme.inkColor}" stroke-width="1.5"/>
           <line x1="120" y1="0" x2="120" y2="180" stroke="${theme.inkColor}" stroke-width="1.5"/>
           <line x1="0" y1="60" x2="180" y2="60" stroke="${theme.inkColor}" stroke-width="1.5"/>
           <line x1="0" y1="120" x2="180" y2="120" stroke="${theme.inkColor}" stroke-width="1.5"/>
-          <!-- Minor Lines -->
           ${[20, 40, 80, 100, 140, 160].map((c) => `
             <line x1="${c}" y1="0" x2="${c}" y2="180" stroke="${theme.columnRuleColor}" stroke-width="0.5"/>
             <line x1="0" y1="${c}" x2="180" y2="${c}" stroke="${theme.columnRuleColor}" stroke-width="0.5"/>
           `).join('')}
-          <!-- Authentic Puzzle Digits -->
           <text x="30" y="15" font-family="${theme.uiFont}" font-size="10" font-weight="700" fill="${theme.inkColor}" text-anchor="middle" dominant-baseline="middle">5</text>
           <text x="70" y="15" font-family="${theme.uiFont}" font-size="10" font-weight="700" fill="${theme.inkColor}" text-anchor="middle" dominant-baseline="middle">3</text>
           <text x="130" y="15" font-family="${theme.uiFont}" font-size="10" font-weight="700" fill="${theme.inkColor}" text-anchor="middle" dominant-baseline="middle">7</text>
@@ -620,7 +659,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
       </div>
 
       <!-- Section Divider Rule -->
-      <div class="section-divider" style="border-top: 1.5pt solid ${theme.inkColor}; margin: 3px 0 5px 0;"></div>
+      <div class="section-divider" style="border-top: 1.5pt solid ${theme.inkColor}; margin: 3px 0 4px 0;"></div>
 
       <!-- Secondary Row: 3 Equal Columns Across Full Page Width -->
       <div class="fp-secondary-grid">
@@ -637,7 +676,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         </div>
       </div>
 
-      <!-- Bottom Briefs Strip -->
+      <!-- Bottom Briefs Strip anchored at page bottom -->
       ${renderBriefStrip(page.briefs, 'FRONT PAGE', theme)}
     `;
     return html;
@@ -649,7 +688,8 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
   html += renderCategoryStrip(page, theme, pageNum);
 
   switch (page.category) {
-    case 'politics':
+    case 'politics': {
+      const pLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
         <div class="inner-hero-row">
           <div class="ih-col-large">
@@ -663,7 +703,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'politics') || getCategoryFallbackImage('politics')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-                <p><strong>NEW DELHI:</strong> ${articles[0].content}</p>
+                ${pLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
                 ${renderPullQuote(articles[0].pullQuote || 'People want development, transparency and real change.', theme)}
               </div>
             </article>
@@ -677,8 +717,10 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
       `;
       break;
+    }
 
-    case 'business-tech':
+    case 'business-tech': {
+      const bLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
         <div class="inner-hero-row">
           <div class="ih-col-large">
@@ -691,19 +733,19 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'business') || getCategoryFallbackImage('business')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-                <p><strong>MUMBAI:</strong> ${articles[0].content}</p>
+                ${bLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
               </div>
             </article>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
             ${renderKeyIndicatorsWidget(null, theme)}
-            <div style="margin-top: 8px;">
+            <div style="margin-top: 6px;">
               ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 4')}
             </div>
           </div>
         </div>
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:4px 0;"></div>
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">${renderSecondaryStory(articles[2], theme, pub.date, 'Page 4')}</div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
@@ -712,8 +754,10 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
       `;
       break;
+    }
 
-    case 'sports':
+    case 'sports': {
+      const sLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
         <div class="inner-hero-row">
           <div class="ih-col-large">
@@ -726,19 +770,19 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports') || getCategoryFallbackImage('sports')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-                <p><strong>AHMEDABAD:</strong> ${articles[0].content}</p>
+                ${sLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
               </div>
             </article>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
             ${renderSportsStatCard(theme)}
-            <div style="margin-top: 8px;">
+            <div style="margin-top: 6px;">
               ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 6')}
             </div>
           </div>
         </div>
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:4px 0;"></div>
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">${renderSecondaryStory(articles[2], theme, pub.date, 'Page 6')}</div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
@@ -747,34 +791,37 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
       `;
       break;
+    }
 
-    case 'opinion-features':
+    case 'opinion-features': {
+      const edLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
+      const colLead = buildFullLeadStoryParagraphs(articles[1].content, articles[1].headline);
       html += `
         <div class="inner-hero-row">
           <div class="ih-col-half">
             <div class="op-badge" style="background:${theme.accentColor === '#0a0a0a' ? '#991b1b' : theme.accentColor}; color:#fff; font-family:${theme.uiFont};">EDITORIAL</div>
-            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:14pt;">A Stronger, More Inclusive India Is Within Reach</h3>
+            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:13.5pt;">A Stronger, More Inclusive India Is Within Reach</h3>
             <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
               THE CHRONICLE EDITORIAL BOARD &nbsp;|&nbsp; ${shortDate(pub.date)}
             </div>
             <div class="op-body" style="column-count:2; column-gap:8px; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-              <p class="first-paragraph">${articles[0].content}</p>
+              ${edLead.slice(0, 3).map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
             </div>
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-half">
             <div class="op-badge" style="background:${theme.accentColor === '#0a0a0a' ? '#1f2937' : theme.accentColor}; color:#fff; font-family:${theme.uiFont};">GUEST COLUMN</div>
-            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:14pt;">The Role of Youth in Shaping India's Future</h3>
+            <h3 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor}; font-size:13.5pt;">The Role of Youth in Shaping India's Future</h3>
             <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
               BY RAJESH MISHRA &nbsp;|&nbsp; SENIOR FELLOW, POLICY FORUM
             </div>
             <div class="op-body" style="column-count:2; column-gap:8px; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-              <p class="first-paragraph">${articles[1].content}</p>
+              ${colLead.slice(0, 3).map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
             </div>
           </div>
         </div>
 
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:4px 0;"></div>
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
 
         <!-- 3 Feature Widgets Row -->
         <div class="fp-secondary-grid">
@@ -790,9 +837,10 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
       `;
       break;
+    }
 
-    default:
-      // Standard balanced broadsheet layout for international, education, entertainment
+    default: {
+      const defLead = buildFullLeadStoryParagraphs(articles[0].content, articles[0].headline);
       html += `
         <div class="inner-hero-row">
           <div class="ih-col-large">
@@ -806,7 +854,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, page.category) || getCategoryFallbackImage(page.category)}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-                <p class="first-paragraph">${articles[0].content}</p>
+                ${defLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
               </div>
             </article>
           </div>
@@ -815,7 +863,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
             ${renderSecondaryStory(articles[1], theme, pub.date, `Page ${pageNum}`)}
           </div>
         </div>
-        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:4px 0;"></div>
+        <div class="section-divider" style="border-top:1pt solid ${theme.inkColor}; margin:3px 0;"></div>
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">${renderSecondaryStory(articles[2], theme, pub.date, `Page ${pageNum}`)}</div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
@@ -824,6 +872,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         ${renderBriefStrip(page.briefs, page.categoryLabel, theme)}
       `;
       break;
+    }
   }
 
   return html;
@@ -886,8 +935,8 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       background: ${theme.paperBg};
       color: ${theme.inkColor};
       font-family: ${bodyFontFinal};
-      font-size: 8pt;
-      line-height: 1.3;
+      font-size: 7.8pt;
+      line-height: 1.28;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
@@ -909,10 +958,11 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .page-inner {
       width: 100%;
       height: 100%;
-      padding: 7mm 8.5mm 6mm 8.5mm;
+      padding: 6mm 8.5mm 5mm 8.5mm;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 0;
       overflow: hidden;
     }
 
@@ -927,7 +977,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       justify-content: space-between;
       align-items: center;
       padding: 2.5px 8px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-size: 6.5pt;
       letter-spacing: 0.8px;
       line-height: 1;
@@ -957,12 +1007,12 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
 
     /* ── Masthead ───────────────────────────────────────────────── */
     .masthead {
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       text-align: center;
       flex-shrink: 0;
     }
     .masthead-main {
-      padding: 1px 0 3px 0;
+      padding: 1px 0 2px 0;
       position: relative;
     }
     .masthead-logo {
@@ -986,7 +1036,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .masthead-tagline {
       font-size: 6.5pt;
       letter-spacing: 2px;
-      margin-top: 2px;
+      margin-top: 1.5px;
       opacity: 0.85;
       font-style: italic;
     }
@@ -995,7 +1045,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       justify-content: space-between;
       align-items: center;
       padding: 2.5px 4px;
-      margin-top: 3px;
+      margin-top: 2.5px;
       font-size: 6pt;
       font-weight: 700;
       letter-spacing: 0.5px;
@@ -1008,9 +1058,8 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .fp-hero-grid {
       display: flex;
       gap: 0;
-      flex: 1;
-      min-height: 0;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
+      align-items: stretch;
     }
     .fp-hero-left {
       width: 19%;
@@ -1026,30 +1075,31 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       flex-direction: column;
     }
 
-    /* ── In-Brief Sidebar ───────────────────────────────────────── */
+    /* ── In-Brief Sidebar (Dense, No Stretching) ─────────────────── */
     .in-brief-box {
       height: 100%;
       padding-right: 6px;
       display: flex;
       flex-direction: column;
+      justify-content: flex-start;
     }
     .ib-header {
       font-size: 7pt;
       font-weight: 800;
       letter-spacing: 1.5px;
       text-align: center;
-      padding: 3px 0;
-      margin-bottom: 4px;
+      padding: 2.5px 0;
+      margin-bottom: 3px;
       line-height: 1;
     }
     .ib-list {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      flex: 1;
+      justify-content: flex-start;
+      gap: 0;
     }
     .ib-item {
-      padding: 3px 0 4px 0;
+      padding: 3.5px 0 4.5px 0;
     }
     .ib-item:last-child {
       border-bottom: none !important;
@@ -1062,27 +1112,45 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       margin-bottom: 1px;
     }
     .ib-hl {
-      font-size: 7pt;
+      font-size: 6.8pt;
       font-weight: 700;
       line-height: 1.15;
-      margin-bottom: 2px;
+      margin-bottom: 1.5px;
     }
     .ib-pg {
       font-size: 5pt;
       font-weight: 600;
       letter-spacing: 0.3px;
     }
+    .ib-pulse-card {
+      margin-top: auto;
+      padding: 3px 4px;
+    }
+    .ib-pulse-title {
+      font-size: 5pt;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      padding-bottom: 1.5px;
+      margin-bottom: 2px;
+      line-height: 1;
+    }
+    .ib-pulse-row {
+      font-size: 5.2pt;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1px;
+      line-height: 1.1;
+    }
 
     /* ── Lead Story Elements ────────────────────────────────────── */
     .lead-story-container {
       display: flex;
       flex-direction: column;
-      flex: 1;
     }
     .lead-media-row {
       display: flex;
       gap: 8px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       align-items: stretch;
     }
     .lead-img-col {
@@ -1091,7 +1159,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     }
     .lead-hero-photo {
       width: 100%;
-      height: 48mm;
+      height: 58mm;
       object-fit: cover;
       display: block;
     }
@@ -1105,15 +1173,17 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .lead-kh-col {
       width: 31%;
       flex: 0 0 31%;
+      height: 58mm;
       padding: 5px 6px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
     }
     .kh-header {
       font-size: 6.5pt;
       font-weight: 800;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       line-height: 1;
     }
     .kh-list {
@@ -1127,7 +1197,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     }
     .kh-list li {
       font-size: 6.8pt;
-      line-height: 1.2;
+      line-height: 1.18;
       padding: 1.5px 0;
     }
     .kh-bullet {
@@ -1136,26 +1206,26 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     }
 
     .lead-headline {
-      font-size: 18.5pt;
+      font-size: 19.5pt;
       font-weight: 900;
-      line-height: 1.05;
+      line-height: 1.06;
       letter-spacing: -0.3px;
-      margin: 2px 0;
+      margin: 2px 0 1px 0;
     }
     .lead-subdeck {
-      font-size: 9pt;
+      font-size: 9.5pt;
       font-style: italic;
       line-height: 1.2;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       opacity: 0.85;
     }
     .art-byline {
-      font-size: 5.5pt;
+      font-size: 5.2pt;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      padding-bottom: 2px;
-      margin-bottom: 4px;
+      padding-bottom: 1.5px;
+      margin-bottom: 3px;
     }
     .lead-body-columns {
       column-count: 3;
@@ -1163,9 +1233,8 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       text-align: justify;
       hyphens: auto;
       -webkit-hyphens: auto;
-      font-size: 7.5pt;
+      font-size: 7.4pt;
       line-height: 1.28;
-      flex: 1;
       overflow: hidden;
     }
     .lead-body-columns p {
@@ -1183,16 +1252,16 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       padding-right: 3px;
       padding-top: 1px;
       line-height: 0.72;
-      margin-top: 3px;
+      margin-top: 2px;
       color: ${theme.dropCapColor};
     }
 
-    /* ── Secondary Stories Grid ─────────────────────────────────── */
+    /* ── Secondary Stories Grid (Full 100% Width) ───────────────── */
     .fp-secondary-grid {
       display: flex;
       gap: 0;
       align-items: stretch;
-      margin: 3px 0 4px 0;
+      margin: 3px 0 2px 0;
       flex-shrink: 0;
     }
     .fp-sec-col {
@@ -1213,9 +1282,9 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       height: 100%;
     }
     .sec-story-hl {
-      font-size: 10pt;
+      font-size: 10.2pt;
       font-weight: 800;
-      line-height: 1.12;
+      line-height: 1.14;
       letter-spacing: -0.2px;
       margin-bottom: 2px;
     }
@@ -1224,7 +1293,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     }
     .sec-thumb {
       width: 100%;
-      height: 22mm;
+      height: 34mm;
       object-fit: cover;
       display: block;
     }
@@ -1239,18 +1308,18 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       line-height: 1.25;
       text-align: justify;
       hyphens: auto;
-      flex: 1;
+      margin: 2px 0;
       overflow: hidden;
     }
     .sec-jump {
       font-size: 5.5pt;
       font-weight: 700;
       text-align: right;
-      margin-top: 2px;
+      margin-top: auto;
       letter-spacing: 0.3px;
     }
 
-    /* ── Briefs Strip (Bottom Band) ─────────────────────────────── */
+    /* ── Briefs Strip (Anchored at Bottom) ──────────────────────── */
     .briefs-strip {
       margin-top: auto;
       flex-shrink: 0;
@@ -1299,9 +1368,8 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .inner-hero-row {
       display: flex;
       gap: 0;
-      flex: 1;
-      min-height: 0;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
+      align-items: stretch;
     }
     .ih-col-large {
       width: 68%;
@@ -1312,6 +1380,8 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       width: 32%;
       flex: 0 0 32%;
       padding-left: 8px;
+      display: flex;
+      flex-direction: column;
     }
     .ih-col-half {
       width: 50%;
@@ -1324,10 +1394,9 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     .inner-lead {
       display: flex;
       flex-direction: column;
-      height: 100%;
     }
     .inner-hl-main {
-      font-size: 15pt;
+      font-size: 15.5pt;
       font-weight: 900;
       line-height: 1.08;
       letter-spacing: -0.3px;
@@ -1335,10 +1404,10 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     }
     .inner-photo {
       width: 100%;
-      height: 38mm;
+      height: 42mm;
       object-fit: cover;
       display: block;
-      margin: 3px 0;
+      margin: 2px 0;
     }
     .inner-3col-body {
       column-count: 3;
@@ -1346,7 +1415,6 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
       text-align: justify;
       font-size: 7.4pt;
       line-height: 1.26;
-      flex: 1;
       overflow: hidden;
     }
     .inner-3col-body p {
@@ -1359,7 +1427,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
 
     /* ── Pull Quote ─────────────────────────────────────────────── */
     .pull-quote {
-      margin: 4px 0;
+      margin: 3px 0;
       padding: 3px 0;
       text-align: center;
       break-inside: avoid;
@@ -1381,7 +1449,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
 
     /* ── State Roundup (Page 2) ─────────────────────────────────── */
     .state-roundup-container {
-      margin: 3px 0;
+      margin: 2px 0 3px 0;
       flex-shrink: 0;
     }
     .sru-header {
@@ -1566,7 +1634,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
 
     /* ── The Chronicle Comics Strip ─────────────────────────────── */
     .comics-container {
-      margin: 3px 0;
+      margin: 3px 0 2px 0;
       flex-shrink: 0;
     }
     .comics-header {
