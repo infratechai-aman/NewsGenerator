@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 import { buildNewspaperHTML } from '@/lib/newspaper-template';
 import { adminStorage } from '@/lib/firebase-admin';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
 
 export const maxDuration = 60;
+
 
 export async function POST(req: NextRequest) {
   let browser = null;
@@ -64,28 +67,42 @@ export async function POST(req: NextRequest) {
     // Convert Uint8Array to Buffer
     const buffer = Buffer.from(pdfBuffer);
 
-    // Upload PDF to Firebase Storage
-    const safeName = publication.name.replace(/[^a-zA-Z0-9-]/g, '_');
-    const filename = `newspapers/${safeName}_${publication.date}_${Date.now()}.pdf`;
-    
-    // Get the bucket
-    const bucket = adminStorage.bucket();
-    const file = bucket.file(filename);
+    const safeName = (publication?.name || 'newspaper').replace(/[^a-zA-Z0-9-]/g, '_');
+    const filename = `${safeName}_${publication?.date || Date.now()}_${Date.now()}.pdf`;
+    const useFirebase = !!process.env.FIREBASE_SERVICE_ACCOUNT;
 
-    await file.save(buffer, {
-      metadata: {
-        contentType: 'application/pdf',
-      },
-    });
+    if (useFirebase) {
+      // Upload PDF to Firebase Storage
+      const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+      const bucket = adminStorage.bucket(bucketName);
+      const destinationPath = `newspapers/${filename}`;
+      const file = bucket.file(destinationPath);
 
-    // Make the file publicly accessible
-    await file.makePublic();
+      await file.save(buffer, {
+        metadata: {
+          contentType: 'application/pdf',
+        },
+      });
 
-    // Get the public URL
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+      // Make the file publicly accessible
+      await file.makePublic();
 
-    // Return the URL for the client to download
-    return NextResponse.json({ url: publicUrl }, { status: 200 });
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+      return NextResponse.json({ url: publicUrl }, { status: 200 });
+    } else {
+      // Local / Inline Fallback
+      try {
+        const outputDir = path.join(process.cwd(), 'public', 'outputs');
+        await mkdir(outputDir, { recursive: true });
+        const filepath = path.join(outputDir, filename);
+        await writeFile(filepath, buffer);
+        return NextResponse.json({ url: `/outputs/${filename}` }, { status: 200 });
+      } catch (fsErr) {
+        // Fallback for read-only serverless environments
+        const base64Data = buffer.toString('base64');
+        return NextResponse.json({ url: `data:application/pdf;base64,${base64Data}` }, { status: 200 });
+      }
+    }
   } catch (error) {
     console.error('PDF rendering error:', error);
     if (browser) {
