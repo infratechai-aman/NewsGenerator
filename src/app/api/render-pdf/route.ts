@@ -320,7 +320,6 @@ function injectPrintToolbar(html: string, publicationName?: string): string {
         }
         body {
           padding-top: 0 !important;
-          background: #ffffff !important;
         }
       }
     </style>

@@ -27,6 +27,7 @@ import {
   CloudSun,
   Tv,
   Palette,
+  Eye,
 } from 'lucide-react';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
@@ -89,6 +90,8 @@ export default function PlannerPage() {
   const [activePageIdx, setActivePageIdx] = useState(0);
   const [draggedBlock, setDraggedBlock] = useState<ContentBlock | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string>('');
 
   const currentTheme = getThemeById(publication.themeId || 'classic-broadsheet');
 
@@ -291,7 +294,7 @@ export default function PlannerPage() {
           </div>
           <style>
             @media screen { body { padding-top: 55px !important; background: #334155 !important; } .page { box-shadow: 0 10px 30px rgba(0,0,0,0.4); margin-bottom: 30px !important; } }
-            @media print { div[style*="position:fixed"] { display: none !important; } body { padding-top: 0 !important; background: #fff !important; } }
+            @media print { div[style*="position:fixed"] { display: none !important; } body { padding-top: 0 !important; } }
           </style>
           <script>window.addEventListener('load', function() { setTimeout(function() { window.print(); }, 700); });</script>
         `;
@@ -372,6 +375,20 @@ export default function PlannerPage() {
             >
               <Wand2 className="h-4 w-4 mr-1.5" />
               Auto-Fill Layout
+            </Button>
+            <Button
+              onClick={() => {
+                const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                const html = buildNewspaperHTML(publication, pages, origin);
+                setPreviewHtml(html);
+                setShowPreviewModal(true);
+              }}
+              variant="outline"
+              size="sm"
+              className="border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold shadow-sm"
+            >
+              <Eye className="h-4 w-4 mr-1.5 text-blue-600" />
+              Live Preview
             </Button>
             {pdfUrl && (
               <Button onClick={() => window.open(pdfUrl, '_blank')} variant="outline" size="sm" className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 font-semibold shadow-sm">
@@ -664,6 +681,53 @@ export default function PlannerPage() {
         accept="image/*"
         onChange={handleImageReplace}
       />
+
+      {/* Live Broadsheet Preview Modal */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="h-14 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-3">
+              <h2 className="text-white font-bold text-sm tracking-wide">
+                Live Broadsheet Preview — {publication.name || 'The Daily Chronicle'}
+              </h2>
+              <Badge className="bg-blue-600/30 text-blue-400 border-blue-500/40 text-xs">
+                Theme: {currentTheme.name}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                size="sm"
+                onClick={() => {
+                  const iframe = document.getElementById('preview-broadsheet-iframe') as HTMLIFrameElement;
+                  if (iframe?.contentWindow) {
+                    iframe.contentWindow.print();
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-8 px-4"
+              >
+                🖨️ Print / Save as PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPreviewModal(false)}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800 font-semibold text-xs h-8 px-3"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Close
+              </Button>
+            </div>
+          </div>
+          <div className="flex-1 p-4 bg-slate-900 overflow-hidden flex justify-center">
+            <iframe
+              id="preview-broadsheet-iframe"
+              srcDoc={previewHtml}
+              title="Broadsheet Preview"
+              className="w-full h-full max-w-[220mm] rounded-lg shadow-2xl bg-white border border-slate-700"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
