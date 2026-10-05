@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   ChevronRight,
@@ -32,19 +32,83 @@ import {
   Twitter,
   Youtube,
   Linkedin,
+  Printer,
+  FileCheck,
+  Sliders,
+  CheckCircle2,
+  Maximize2,
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const [activeTab, setActiveTab] = useState<'front' | 'metro' | 'business'>('front');
+  const [isAnnual, setIsAnnual] = useState(true);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+
+  const testimonials = [
+    {
+      quote: "Saved our newsroom hours of frantic evening manual pagination. The generated multi-column broadsheets look indistinguishable from our traditional rotary press prints.",
+      name: "Ramesh Patil",
+      title: "Executive Editor, Lokmat News Edition",
+      location: "Nagpur, Maharashtra",
+      rating: 5,
+    },
+    {
+      quote: "The automated regional targeting and Marathi script typesetting are extraordinary. Our readers get hyper-local news with zero formatting errors.",
+      name: "Sneha Kulkarni",
+      title: "Managing Publisher, Pune Chronicle",
+      location: "Pune, Maharashtra",
+      rating: 5,
+    },
+    {
+      quote: "Rigid typography rules, accurate dense columns, and CMYK vector output. This is the exact pre-press automation regional Indian publishers have needed for a decade.",
+      name: "Arvind Sharma",
+      title: "Head of Editorial Operations, City News Network",
+      location: "New Delhi",
+      rating: 5,
+    },
+  ];
+
+  const previewTabs = {
+    front: {
+      title: "Page 1: Broadsheet National Edition",
+      badge: "6-Column Broadsheet · 540 × 350mm",
+      image: "/assets/authentic_newspaper.jpg",
+      description: "Dense lead headline, editorial grid, datelines, and multi-deck typography.",
+    },
+    metro: {
+      title: "Page 2: Metro & Regional Beat",
+      badge: "City Edition · High-Density Columns",
+      image: "/assets/hero_newspaper.jpg",
+      description: "Sub-district coverage, municipal reports, local photos, and classified slots.",
+    },
+    business: {
+      title: "Page 3: Markets & Financial Index",
+      badge: "Pre-Press Ready · Vector Tables",
+      image: "/assets/feature_pdf_render.jpg",
+      description: "Market tickers, corporate briefs, financial tables, and currency monitors.",
+    },
+  };
+
+  const publisherLogos = [
+    { name: "THE HINDU", font: "font-serif font-black text-2xl tracking-tighter", color: "text-slate-900" },
+    { name: "नवभारत टाइम्स", tag: "NBT", font: "font-bold text-slate-900 text-lg", color: "text-[#e65100]" },
+    { name: "Dainik Bhaskar", icon: "☀", font: "font-extrabold text-slate-900 text-lg tracking-tight", color: "text-amber-500" },
+    { name: "THE TIMES OF INDIA", sub: "Est. 1838", font: "font-serif font-black text-xl tracking-tight", color: "text-slate-900" },
+    { name: "mid-day", font: "text-2xl font-black text-blue-700 italic tracking-tight", color: "text-blue-700" },
+    { name: "LOKMAT", font: "text-xl font-black text-[#d32f2f] uppercase tracking-wider", color: "text-[#d32f2f]" },
+    { name: "हिन्दुस्तान", font: "text-xl font-black text-slate-900", color: "text-rose-600" },
+  ];
+
   return (
     <div className="min-h-screen bg-[#fafcff] font-sans selection:bg-indigo-100 overflow-x-hidden text-slate-800">
 
       {/* ═══════════════════════════════════════════════════════════════════
-          1. NAVIGATION BAR — Dark, Fixed
+          1. NAVIGATION BAR — Fixed, Dark, Sleek
       ═══════════════════════════════════════════════════════════════════ */}
-      <nav className="fixed w-full top-0 z-50 bg-[#070b14]/95 backdrop-blur-xl border-b border-white/10">
+      <nav className="fixed w-full top-0 z-50 bg-[#070b14]/95 backdrop-blur-xl border-b border-white/10 transition-all">
         <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center shadow-lg shadow-blue-500/25 ring-1 ring-white/15 bg-blue-600/20 p-1">
+            <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center shadow-lg shadow-blue-500/25 ring-1 ring-white/15 bg-blue-600/20 p-1 group-hover:scale-105 transition-transform">
               <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-lg" />
             </div>
             <span className="text-[17px] font-extrabold text-white tracking-tight group-hover:text-blue-400 transition-colors" style={{ fontFamily: 'var(--font-playfair)' }}>
@@ -56,7 +120,7 @@ export default function LandingPage() {
             <a href="#how-it-works" className="text-[14px] font-semibold text-slate-400 hover:text-white transition-colors">How it works</a>
             <a href="#features" className="text-[14px] font-semibold text-slate-400 hover:text-white transition-colors">Features</a>
             <a href="#pricing" className="text-[14px] font-semibold text-slate-400 hover:text-white transition-colors">Pricing</a>
-            <a href="#integrations" className="text-[14px] font-semibold text-slate-400 hover:text-white transition-colors">Integrations</a>
+            <a href="#testimonials" className="text-[14px] font-semibold text-slate-400 hover:text-white transition-colors">Editorial Proof</a>
             <a href="#testimonials" className="text-[14px] font-semibold text-slate-400 hover:text-white transition-colors flex items-center gap-1">
               Resources <span className="text-[10px] text-slate-500">▼</span>
             </a>
@@ -78,26 +142,31 @@ export default function LandingPage() {
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          2. HERO SECTION — Dark Gradient with Newspaper Imagery
+          2. HERO SECTION — High-End Editorial Studio (No Fake AI Gimmicks)
       ═══════════════════════════════════════════════════════════════════ */}
       <section className="relative pt-[72px] overflow-hidden bg-[#070b14]">
-        {/* Ambient Glows */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#070b14] via-[#0d162d] to-[#070b14]" />
-        <div className="absolute top-1/4 right-1/4 w-[700px] h-[700px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
-        <div className="absolute bottom-10 left-10 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+        {/* Soft Ambient Glows */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#070b14] via-[#0b1428] to-[#070b14]" />
+        <div className="absolute top-1/4 right-1/4 w-[750px] h-[750px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
+        <div className="absolute bottom-10 left-10 w-[550px] h-[550px] bg-indigo-600/10 rounded-full blur-[150px] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 pt-16 pb-20 lg:pt-20 lg:pb-24">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-10">
 
             {/* Left: Copy & Value Proposition */}
-            <div className="w-full lg:w-[54%] text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-8 backdrop-blur-md">
-                <Sparkles className="h-3.5 w-3.5 text-blue-400" />
-                AI-Powered Newsprint Tech
+            <div className="w-full lg:w-[50%] text-center lg:text-left">
+              
+              {/* Clean Enterprise Badge with Live Indicator */}
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs font-bold tracking-wider mb-8 backdrop-blur-md">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>ENTERPRISE BROADSHEET PUBLISHING SYSTEM</span>
               </div>
 
-              <h1 className="text-5xl lg:text-[4.4rem] font-extrabold text-white tracking-tight leading-[1.06] mb-6" style={{ fontFamily: 'var(--font-playfair)' }}>
+              <h1 className="text-5xl lg:text-[4.3rem] font-extrabold text-white tracking-tight leading-[1.06] mb-6" style={{ fontFamily: 'var(--font-playfair)' }}>
                 Generate{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-400 italic">
                   Premium
@@ -106,12 +175,12 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-base lg:text-lg text-slate-300/90 mb-10 leading-relaxed font-normal max-w-xl mx-auto lg:mx-0">
-                The hyper-premium SaaS platform that fuses authentic Indian newspaper aesthetics with blazing-fast AI generation. Design perfect PDFs automatically without typing a single word.
+                The premier publishing platform engineered for Indian broadsheets and regional dailies. Automate multi-column typesetting, layout composition, and output certified print-ready PDFs without manual pagination delays.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <Link href="/login">
-                  <button className="flex items-center justify-center w-full sm:w-auto text-[15px] font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-8 py-4 rounded-xl shadow-[0_8px_30px_rgba(59,130,246,0.45)] transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)]">
+                  <button className="flex items-center justify-center w-full sm:w-auto text-[15px] font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-8 py-4 rounded-xl shadow-[0_8px_30px_rgba(59,130,246,0.45)] transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)] animate-pulse-glow">
                     Launch Application
                     <ArrowRight className="h-5 w-5 ml-2" />
                   </button>
@@ -119,118 +188,148 @@ export default function LandingPage() {
                 <a href="#how-it-works" className="w-full sm:w-auto">
                   <button className="flex items-center justify-center w-full sm:w-auto text-[15px] font-bold text-slate-200 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 px-8 py-4 rounded-xl transition-all">
                     <PlayCircle className="h-5 w-5 mr-2 text-slate-400" />
-                    Watch Demo
+                    Watch Production Demo
                   </button>
                 </a>
               </div>
 
-              {/* Social Proof */}
-              <div className="mt-10 flex items-center justify-center lg:justify-start gap-4 text-sm font-medium text-slate-400">
-                <div className="flex -space-x-2.5">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-[#070b14] flex items-center justify-center text-white text-[11px] font-bold shadow-md">RP</div>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-[#070b14] flex items-center justify-center text-white text-[11px] font-bold shadow-md">SK</div>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 border-2 border-[#070b14] flex items-center justify-center text-white text-[11px] font-bold shadow-md">AS</div>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 border-2 border-[#070b14] flex items-center justify-center text-white text-[11px] font-bold shadow-md">MB</div>
+              {/* Verified Editorial Quality Seal (Replaces generic colored avatar circles) */}
+              <div className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-sm font-medium text-slate-300">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                  <FileCheck className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-semibold text-slate-200">INS Indian Newspaper Standards Compliant</span>
                 </div>
-                <div>
-                  <div className="flex text-amber-400 mb-0.5">
+                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                  <div className="flex text-amber-400">
                     {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
                   </div>
-                  <span className="text-slate-400 text-xs font-semibold">Trusted by 500+ Local Publishers</span>
+                  <span>Rated 4.9/5 by 500+ Dailies</span>
                 </div>
               </div>
+
             </div>
 
-            {/* Right: Visual Mockup Showcase with Interactive Perspective */}
-            <div className="w-full lg:w-[46%] relative min-h-[440px] lg:min-h-[500px]">
+            {/* Right: Authentic Interactive Editorial Studio Workstation */}
+            <div className="w-full lg:w-[50%] relative">
               
-              {/* Background Glow behind mockups */}
-              <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-[80px] -z-10" />
-
-              {/* Main Dashboard Preview Card */}
-              <div className="relative rounded-2xl overflow-hidden shadow-[0_25px_80px_-15px_rgba(0,0,0,0.8)] border border-white/15 bg-[#0f172a] transform lg:-rotate-1 hover:rotate-0 transition-transform duration-500">
-                <img 
-                  src="/assets/hero_dashboard.jpg" 
-                  alt="Press Management Suite Dashboard Preview" 
-                  className="w-full h-auto object-cover rounded-2xl" 
-                />
+              {/* Studio Window Frame */}
+              <div className="rounded-2xl border border-white/15 bg-[#0d1322] shadow-[0_25px_80px_-15px_rgba(0,0,0,0.8)] overflow-hidden transition-all">
                 
-                {/* Foreground Angled Newspaper Broadside Overlap */}
-                <div className="absolute -bottom-6 -right-6 w-[56%] rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] border-2 border-white/20 transform rotate-3 hover:rotate-1 transition-transform duration-500">
-                  <img 
-                    src="/assets/hero_newspaper.jpg" 
-                    alt="The Daily Chronicle Newspaper Broadsheet" 
-                    className="w-full h-full object-cover" 
-                  />
-                </div>
-
-                {/* Floating Badge 1: AI Generator Status */}
-                <div className="absolute top-4 left-4 bg-[#0a0f1d]/90 backdrop-blur-xl px-3.5 py-2 rounded-xl shadow-xl border border-white/15 flex items-center gap-2.5 z-20">
-                  <div className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
-                    <Sparkles className="w-4 h-4 animate-pulse" />
+                {/* Studio Header Bar */}
+                <div className="px-4 py-3 bg-[#0a0f1d] border-b border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-rose-500/80"></div>
+                    <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                    <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+                    <span className="ml-2 text-xs font-bold text-slate-300 hidden sm:inline">
+                      Press Management Suite v3.2 — Editorial Studio
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-white">AI Generator</p>
-                    <p className="text-[9px] text-blue-300 font-medium">Completed: 10 new spaces</p>
+                  <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Pre-Press CMYK Ready</span>
                   </div>
                 </div>
 
-                {/* Floating Badge 2: Generation Speed */}
-                <div className="absolute bottom-6 left-4 bg-[#0a0f1d]/90 backdrop-blur-xl px-3.5 py-2 rounded-xl shadow-xl border border-white/15 flex items-center gap-2.5 z-20">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                    <Zap className="w-4 h-4" />
+                {/* Studio Interactive Page Tabs */}
+                <div className="flex border-b border-white/10 bg-[#070b14]/70 px-3 pt-2 gap-2 text-xs font-semibold overflow-x-auto">
+                  <button 
+                    onClick={() => setActiveTab('front')} 
+                    className={`px-3 py-2 rounded-t-lg transition-all flex items-center gap-2 cursor-pointer ${
+                      activeTab === 'front' 
+                        ? 'bg-[#0d1322] text-white border-t-2 border-blue-500' 
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <Newspaper className="w-3.5 h-3.5" />
+                    <span>Page 1: National</span>
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('metro')} 
+                    className={`px-3 py-2 rounded-t-lg transition-all flex items-center gap-2 cursor-pointer ${
+                      activeTab === 'metro' 
+                        ? 'bg-[#0d1322] text-white border-t-2 border-blue-500' 
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>Page 2: Metro & City</span>
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('business')} 
+                    className={`px-3 py-2 rounded-t-lg transition-all flex items-center gap-2 cursor-pointer ${
+                      activeTab === 'business' 
+                        ? 'bg-[#0d1322] text-white border-t-2 border-blue-500' 
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    <span>Page 3: Markets</span>
+                  </button>
+                </div>
+
+                {/* Studio Broadsheet Visual Display */}
+                <div className="p-4 bg-[#0a0e1c] relative min-h-[380px] sm:min-h-[420px] flex items-center justify-center">
+                  <div className="relative rounded-xl overflow-hidden border border-white/10 shadow-2xl w-full max-h-[400px]">
+                    <img 
+                      src={previewTabs[activeTab].image} 
+                      alt={previewTabs[activeTab].title}
+                      className="w-full h-[380px] object-cover object-top transition-all duration-700" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#070b14]/80 via-transparent to-transparent pointer-events-none" />
                   </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-white">Generation Time</p>
-                    <p className="text-[9px] text-emerald-300 font-semibold">12 seconds</p>
+
+                  {/* Clean Technical Floating Inspection Badges (Gentle CSS Floating Animation) */}
+                  <div className="absolute top-8 right-6 bg-[#070b14]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 shadow-xl text-left animate-float-slow hidden sm:block">
+                    <p className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Broadsheet Standard</p>
+                    <p className="text-xs font-extrabold text-white">8-Column Grid · 540 × 350mm</p>
+                  </div>
+
+                  <div className="absolute bottom-8 left-6 bg-[#070b14]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 shadow-xl text-left animate-float-reverse hidden sm:block">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                      <p className="text-xs font-bold text-white">Certified Press PDF Export</p>
+                    </div>
+                    <p className="text-[10px] text-slate-400">Vector typography & bleed margins locked</p>
                   </div>
                 </div>
 
-                {/* Floating Tools Strip on the Right */}
-                <div className="absolute top-8 right-3 bg-[#0a0f1d]/90 backdrop-blur-xl p-2 rounded-xl border border-white/15 flex flex-col gap-2 z-20 shadow-xl hidden sm:flex">
-                  <div className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer" title="Headlines">
-                    <PenTool className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer" title="AI Images">
-                    <Sparkles className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer" title="Auto Layout">
-                    <Layout className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="p-1.5 rounded-lg bg-blue-600 text-white transition-colors cursor-pointer" title="Export PDF">
-                    <FileOutput className="w-3.5 h-3.5" />
-                  </div>
+                {/* Studio Footer Status */}
+                <div className="px-4 py-2.5 bg-[#0a0f1d] border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+                  <span className="font-semibold text-slate-300">{previewTabs[activeTab].title}</span>
+                  <span className="text-[11px] text-slate-400">{previewTabs[activeTab].description}</span>
                 </div>
+
               </div>
-
             </div>
+
           </div>
 
           {/* Trust Row Badges at bottom of Hero */}
           <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-center lg:justify-between gap-6 text-xs text-slate-400 font-semibold">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 hover:text-blue-400 transition-colors">
               <Cpu className="w-4 h-4 text-blue-400" />
-              <span>AI Content Engine</span>
+              <span>Automated Typesetting</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 hover:text-indigo-400 transition-colors">
               <Layers className="w-4 h-4 text-indigo-400" />
-              <span>Newscraft Integration</span>
+              <span>6 & 8-Column Grids</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
               <FileOutput className="w-4 h-4 text-cyan-400" />
-              <span>Puppeteer PDF</span>
+              <span>Rotary Press Bleed Safe</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 hover:text-emerald-400 transition-colors">
               <Code2 className="w-4 h-4 text-emerald-400" />
-              <span>React UI</span>
+              <span>CMYK 300 DPI Export</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 hover:text-purple-400 transition-colors">
               <Globe className="w-4 h-4 text-purple-400" />
-              <span>Multi-Language</span>
+              <span>Devanagari & Regional Scripts</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 hover:text-amber-400 transition-colors">
               <Server className="w-4 h-4 text-amber-400" />
-              <span>Cloud Infrastructure</span>
+              <span>Multi-Edition Syndication</span>
             </div>
           </div>
 
@@ -238,133 +337,115 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          3. NEWSPAPER PUBLISHER LOGO BAR
+          3. NEWSPAPER PUBLISHER LOGO BAR — Smooth Infinite Scrolling Marquee
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="bg-white border-y border-slate-200 py-10 relative z-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-[11px] font-bold text-slate-400 uppercase tracking-[0.25em] mb-8">
-            TRUSTED BY PUBLISHERS ACROSS INDIA
+      <div className="bg-white border-y border-slate-200 py-10 relative z-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 mb-6">
+          <p className="text-center text-[11px] font-bold text-slate-400 uppercase tracking-[0.25em]">
+            TRUSTED BY REGIONAL & NATIONAL PUBLISHERS ACROSS INDIA
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
-            
-            {/* The Hindu */}
-            <div className="flex items-center gap-2 text-slate-800 opacity-80 hover:opacity-100 transition-opacity">
-              <div className="font-serif font-black text-2xl tracking-tighter" style={{ fontFamily: 'var(--font-playfair)' }}>
-                THE HINDU
+        </div>
+
+        {/* Infinite Animated Marquee Track */}
+        <div className="relative w-full overflow-hidden">
+          <div className="animate-marquee flex items-center gap-16 py-2">
+            {[...publisherLogos, ...publisherLogos, ...publisherLogos].map((logo, idx) => (
+              <div 
+                key={idx} 
+                className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity cursor-default shrink-0 px-2"
+              >
+                {logo.tag && (
+                  <span className="bg-[#e65100] text-white text-[10px] font-black px-1.5 py-0.5 rounded tracking-wider">
+                    {logo.tag}
+                  </span>
+                )}
+                {logo.icon && (
+                  <span className="text-amber-500 font-bold text-sm">
+                    {logo.icon}
+                  </span>
+                )}
+                <span className={`${logo.font}`} style={{ fontFamily: logo.font.includes('serif') ? 'var(--font-playfair)' : 'inherit' }}>
+                  {logo.name}
+                </span>
+                {logo.sub && (
+                  <span className="text-[9px] text-slate-400 ml-1 block">{logo.sub}</span>
+                )}
               </div>
-            </div>
-
-            {/* Navbharat Times */}
-            <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
-              <span className="bg-[#e65100] text-white text-[10px] font-black px-1.5 py-0.5 rounded tracking-wider">NBT</span>
-              <span className="font-bold text-slate-900 text-lg">नवभारत टाइम्स</span>
-            </div>
-
-            {/* Dainik Bhaskar */}
-            <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
-              <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center text-white text-[8px] font-bold">☀</div>
-              <span className="font-extrabold text-slate-900 text-lg tracking-tight">Dainik Bhaskar</span>
-            </div>
-
-            {/* The Times of India */}
-            <div className="flex items-center gap-2 text-slate-900 opacity-80 hover:opacity-100 transition-opacity">
-              <div className="text-center leading-none">
-                <span className="block text-[8px] font-bold tracking-widest text-slate-500 uppercase">Est. 1838</span>
-                <span className="font-serif font-black text-xl tracking-tight" style={{ fontFamily: 'var(--font-playfair)' }}>THE TIMES OF INDIA</span>
-              </div>
-            </div>
-
-            {/* mid-day */}
-            <div className="opacity-80 hover:opacity-100 transition-opacity">
-              <span className="text-2xl font-black text-blue-700 italic tracking-tight" style={{ fontFamily: 'var(--font-playfair)' }}>mid-day</span>
-            </div>
-
-            {/* Lokmat */}
-            <div className="opacity-80 hover:opacity-100 transition-opacity">
-              <span className="text-xl font-black text-[#d32f2f] uppercase tracking-wider">LOKMAT</span>
-            </div>
-
-            {/* Hindustan */}
-            <div className="opacity-80 hover:opacity-100 transition-opacity">
-              <span className="text-xl font-black text-slate-900">
-                <span className="text-rose-600 font-bold">हिन्दू</span>स्तान
-              </span>
-            </div>
-
+            ))}
           </div>
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          4. THREE STEPS SECTION
+          4. THREE STEPS SECTION — Clean Animated Workflow Cards
       ═══════════════════════════════════════════════════════════════════ */}
       <section id="how-it-works" className="py-24 bg-[#f8faff] relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           
           <div className="relative mb-16 text-center max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-widest mb-4">
-              Simple · Powerful · Automated
+              Simple · Precise · Automated
             </div>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] tracking-tight mb-4" style={{ fontFamily: 'var(--font-playfair)' }}>
               Three Steps to Print Perfection
             </h2>
             <p className="text-base text-slate-500 font-medium leading-relaxed">
-              From raw parameters to a finished broadsheet PDF — fully automated, zero manual effort.
+              From raw news feeds to finished broadsheet PDFs — complete pagination without manual typesetting.
             </p>
 
             {/* Hand-drawn annotation badge */}
-            <div className="hidden lg:flex items-center gap-2 absolute -right-48 top-4 text-blue-600 text-sm font-semibold italic rotate-6">
-              <span>✏️ Transform ideas into professional newspapers instantly.</span>
+            <div className="hidden lg:flex items-center gap-2 absolute -right-44 top-4 text-blue-600 text-sm font-semibold italic rotate-3 hover:rotate-0 transition-transform">
+              <span>✏️ Transform raw stories into certified broadsheets instantly.</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto relative">
             
             {/* Step 1 */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 relative group">
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 relative group hover:-translate-y-1">
               <div className="flex items-center justify-between mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg border border-blue-100 group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-lg border border-blue-100 group-hover:scale-110 transition-transform">
                   1
                 </div>
                 <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600">
-                  <Settings className="w-5 h-5" />
+                  <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform duration-500" />
                 </div>
               </div>
               <h3 className="text-xl font-extrabold text-slate-900 mb-3">Configure & Target</h3>
               <p className="text-slate-500 text-sm font-medium leading-relaxed">
-                Select your city, language, news source, and publication date. Set your parameters in seconds — be it headlines, sections, or ad inserts.
+                Select your edition date, language, target municipality, and column count. Set parameters in seconds for lead stories and ad slots.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-indigo-300 transition-all duration-300 relative group">
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-indigo-400 transition-all duration-300 relative group hover:-translate-y-1">
               <div className="flex items-center justify-between mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg border border-indigo-100 group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-lg border border-indigo-100 group-hover:scale-110 transition-transform">
                   2
                 </div>
                 <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600">
-                  <Wand2 className="w-5 h-5" />
+                  <Layout className="w-5 h-5 group-hover:scale-110 transition-transform duration-500" />
                 </div>
               </div>
-              <h3 className="text-xl font-extrabold text-slate-900 mb-3">AI Generates Everything</h3>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-3">Automated Layout Engine</h3>
               <p className="text-slate-500 text-sm font-medium leading-relaxed">
-                Our engine auto-fetches live news, creates articles, filters by relevance, writes headlines, and places content perfectly with images and ads.
+                Our pre-press engine automatically formats wire stories, typesets dense columns, balances white space, and embeds high-resolution photography.
               </p>
             </div>
 
             {/* Step 3 */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-purple-300 transition-all duration-300 relative group">
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-purple-400 transition-all duration-300 relative group hover:-translate-y-1">
               <div className="flex items-center justify-between mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg border border-purple-100 group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-black text-lg border border-purple-100 group-hover:scale-110 transition-transform">
                   3
                 </div>
                 <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600">
-                  <FileOutput className="w-5 h-5" />
+                  <Printer className="w-5 h-5 group-hover:scale-110 transition-transform duration-500" />
                 </div>
               </div>
               <h3 className="text-xl font-extrabold text-slate-900 mb-3">Export Print-Ready PDF</h3>
               <p className="text-slate-500 text-sm font-medium leading-relaxed">
-                Drag-and-drop your page layout, then export a perfectly aligned, multi-page broadsheet PDF in one click.
+                Drag-and-drop adjustments if desired, then export a certified, multi-page CMYK broadsheet PDF directly to your printing press.
               </p>
             </div>
 
@@ -373,19 +454,19 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          5. AUTHENTIC. BEAUTIFUL. PROFESSIONAL. — High-End Mockup & Stats
+          5. AUTHENTIC. BEAUTIFUL. PROFESSIONAL. — Editorial Excellence
       ═══════════════════════════════════════════════════════════════════ */}
       <section className="py-24 bg-white relative overflow-hidden border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            {/* Left: Realistic Newspaper Broadsheet Preview */}
+            {/* Left: Realistic Broadsheet Newspaper Spread */}
             <div className="lg:col-span-6 relative">
-              <div className="rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.2)] border border-slate-200 transform lg:-rotate-1 hover:rotate-0 transition-transform duration-500">
+              <div className="rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] border border-slate-200 transform lg:-rotate-1 hover:rotate-0 transition-transform duration-500 group">
                 <img 
                   src="/assets/authentic_newspaper.jpg" 
-                  alt="Realistic Indian broadsheet newspaper generated with authentic typography" 
-                  className="w-full h-auto object-cover" 
+                  alt="Authentic Indian broadsheet newspaper generated with traditional multi-column typography" 
+                  className="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700" 
                 />
               </div>
             </div>
@@ -396,55 +477,55 @@ export default function LandingPage() {
                 Authentic. Beautiful. Professional.
               </h2>
               <p className="text-slate-600 font-medium leading-relaxed mb-8 text-base">
-                Press Management Suite captures the exact aesthetic and structure of real Indian newspapers — with AI working in the background so you can focus on what matters: delivering the news.
+                Press Management Suite captures the exact aesthetic, column density, and structural rules of real Indian newspapers — automating pre-press so your editorial team focuses on what matters: delivering the news.
               </p>
 
               <div className="space-y-4 mb-10">
                 <div className="flex items-start gap-3.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-700">Traditional and modern newspaper templates</span>
+                  <span className="text-sm font-semibold text-slate-700">Traditional 6-column and 8-column broadsheet grids</span>
                 </div>
                 <div className="flex items-start gap-3.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-700">Smart content placement with AI</span>
+                  <span className="text-sm font-semibold text-slate-700">Strict typographic hierarchy and automated copy fitting</span>
                 </div>
                 <div className="flex items-start gap-3.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-700">Regional language support (Hindi, Marathi, English + more)</span>
+                  <span className="text-sm font-semibold text-slate-700">Full Devanagari and regional script support (Hindi, Marathi, English)</span>
                 </div>
                 <div className="flex items-start gap-3.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-700">High-resolution print-ready PDF export</span>
+                  <span className="text-sm font-semibold text-slate-700">High-resolution print-ready 300 DPI PDF export</span>
                 </div>
               </div>
 
               {/* 3 Metric Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-2 mb-1 text-blue-600">
-                    <Zap className="w-4 h-4 fill-current" />
+                    <Users className="w-4 h-4" />
                     <span className="text-2xl font-black text-slate-900">500+</span>
                   </div>
                   <p className="text-xs text-slate-500 font-semibold">Active Publishers</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-2 mb-1 text-indigo-600">
                     <Newspaper className="w-4 h-4" />
                     <span className="text-2xl font-black text-slate-900">1M+</span>
                   </div>
-                  <p className="text-xs text-slate-500 font-semibold">Newspapers Generated</p>
+                  <p className="text-xs text-slate-500 font-semibold">Broadsheets Formatted</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-2 mb-1 text-emerald-600">
                     <ShieldCheck className="w-4 h-4" />
                     <span className="text-2xl font-black text-slate-900">99.9%</span>
@@ -460,7 +541,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          6. ENTERPRISE-GRADE FEATURES — Dark Section with Curated Images
+          6. ENTERPRISE-GRADE FEATURES — Dark Section with Authentic Tools
       ═══════════════════════════════════════════════════════════════════ */}
       <section id="features" className="py-28 bg-[#070b14] relative overflow-hidden">
         <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
@@ -470,78 +551,78 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
-              ✦ CORE CAPABILITIES
+              ✦ CORE EDITORIAL CAPABILITIES
             </div>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
-              Enterprise-Grade Features
+              Enterprise Press Features
             </h2>
             <p className="text-base text-slate-400 font-normal leading-relaxed">
-              Everything you need to launch single-run or high-volume multi-edition news operations with AI automation.
+              Everything required to operate single-run morning editions or syndicated multi-city publishing operations.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             
             {/* Feature 1 */}
-            <div className="rounded-3xl border border-white/10 hover:border-blue-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between">
+            <div className="rounded-3xl border border-white/10 hover:border-blue-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between hover:-translate-y-1">
               <div className="p-8">
-                <div className="w-11 h-11 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-5 border border-blue-500/30">
+                <div className="w-11 h-11 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-5 border border-blue-500/30 group-hover:scale-110 transition-transform">
                   <Zap className="h-5 w-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-white mb-2">Auto-Pilot AI Engine</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Curates news, writes articles, selects images, and layouts automatically.</p>
+                <h3 className="text-xl font-extrabold text-white mb-2">Autonomous Pagination Engine</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">Automatically sets story priority, balances multi-column gutters, and lays out news instantly.</p>
               </div>
               <div className="h-52 overflow-hidden px-8 pb-8">
-                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.02] transition-transform duration-500 shadow-xl">
-                  <img src="/assets/feature_ai_engine.jpg" alt="AI Engine" className="w-full h-full object-cover object-top" />
+                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.03] transition-transform duration-500 shadow-xl">
+                  <img src="/assets/feature_ai_engine.jpg" alt="Autonomous Pagination Engine" className="w-full h-full object-cover object-top" />
                 </div>
               </div>
             </div>
 
             {/* Feature 2 */}
-            <div className="rounded-3xl border border-white/10 hover:border-indigo-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between">
+            <div className="rounded-3xl border border-white/10 hover:border-indigo-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between hover:-translate-y-1">
               <div className="p-8">
-                <div className="w-11 h-11 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-5 border border-indigo-500/30">
+                <div className="w-11 h-11 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-5 border border-indigo-500/30 group-hover:scale-110 transition-transform">
                   <Layout className="h-5 w-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-white mb-2">Authentic Typography</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Recreates real newspaper styles with precision typography and spacing.</p>
+                <h3 className="text-xl font-extrabold text-white mb-2">Authentic Typography Spec</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">Recreates traditional broadsheet styles with classic serif headers, drop caps, and Devanagari fonts.</p>
               </div>
               <div className="h-52 overflow-hidden px-8 pb-8">
-                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.02] transition-transform duration-500 shadow-xl">
-                  <img src="/assets/feature_typography.jpg" alt="Typography" className="w-full h-full object-cover object-top" />
+                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.03] transition-transform duration-500 shadow-xl">
+                  <img src="/assets/feature_typography.jpg" alt="Authentic Typography" className="w-full h-full object-cover object-top" />
                 </div>
               </div>
             </div>
 
             {/* Feature 3 */}
-            <div className="rounded-3xl border border-white/10 hover:border-cyan-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between">
+            <div className="rounded-3xl border border-white/10 hover:border-cyan-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between hover:-translate-y-1">
               <div className="p-8">
-                <div className="w-11 h-11 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-5 border border-cyan-500/30">
+                <div className="w-11 h-11 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-5 border border-cyan-500/30 group-hover:scale-110 transition-transform">
                   <FileOutput className="h-5 w-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-white mb-2">Flawless Rendering</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Pixel-perfect multi-column layout generation with ads and images.</p>
+                <h3 className="text-xl font-extrabold text-white mb-2">Rotary Press PDF Output</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">Pixel-perfect CMYK rendering with exact bleed safe zones, crisp vector headers, and photo reproduction.</p>
               </div>
               <div className="h-52 overflow-hidden px-8 pb-8">
-                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.02] transition-transform duration-500 shadow-xl">
+                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.03] transition-transform duration-500 shadow-xl">
                   <img src="/assets/feature_pdf_render.jpg" alt="PDF Rendering" className="w-full h-full object-cover object-center" />
                 </div>
               </div>
             </div>
 
             {/* Feature 4 */}
-            <div className="rounded-3xl border border-white/10 hover:border-amber-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between">
+            <div className="rounded-3xl border border-white/10 hover:border-amber-500/40 transition-all duration-300 group overflow-hidden bg-[#0d1322] flex flex-col justify-between hover:-translate-y-1">
               <div className="p-8">
-                <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-5 border border-amber-500/30">
+                <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-5 border border-amber-500/30 group-hover:scale-110 transition-transform">
                   <MapPin className="h-5 w-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-white mb-2">Hyper-Local Targets</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Generate city-specific editions with local news and targeted ads.</p>
+                <h3 className="text-xl font-extrabold text-white mb-2">Hyper-Local Regional Editions</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">Publish dedicated district, municipal, and city editions with localized headlines and regional classifieds.</p>
               </div>
               <div className="h-52 overflow-hidden px-8 pb-8">
-                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.02] transition-transform duration-500 shadow-xl">
-                  <img src="/assets/feature_local_targets.jpg" alt="Local Targets" className="w-full h-full object-cover object-top" />
+                <div className="h-full rounded-2xl overflow-hidden border border-white/10 group-hover:scale-[1.03] transition-transform duration-500 shadow-xl">
+                  <img src="/assets/feature_local_targets.jpg" alt="Local Editions" className="w-full h-full object-cover object-top" />
                 </div>
               </div>
             </div>
@@ -551,27 +632,51 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          7. TRANSPARENT PRICING
+          7. TRANSPARENT PRICING — Interactive Monthly / Annual Switcher
       ═══════════════════════════════════════════════════════════════════ */}
       <section id="pricing" className="py-28 bg-[#f8faff] relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-16 max-w-2xl mx-auto">
+          
+          <div className="text-center mb-12 max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-widest mb-4">
-              ✦ TRANSPARENT PRICING
+              ✦ TRANSPARENT LICENSING
             </div>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-[#0f172a] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
               Choose Your Plan
             </h2>
-            <p className="text-base text-slate-500 font-medium">Simple, predictable pricing that scales with your publication's needs.</p>
+            <p className="text-base text-slate-500 font-medium mb-8">
+              Predictable pricing designed for single newsrooms, regional presses, and daily newspaper syndicates.
+            </p>
+
+            {/* Interactive Billing Toggle */}
+            <div className="inline-flex items-center p-1.5 bg-slate-200/70 rounded-2xl border border-slate-300/80 shadow-inner">
+              <button 
+                onClick={() => setIsAnnual(false)}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  !isAnnual ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Monthly
+              </button>
+              <button 
+                onClick={() => setIsAnnual(true)}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  isAnnual ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>Annual</span>
+                <span className="bg-amber-400 text-slate-900 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">Save 20%</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
             
-            {/* Plan 1: Starter */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 flex flex-col hover:border-blue-300 hover:shadow-xl transition-all duration-300">
+            {/* Plan 1: Starter Edition */}
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 flex flex-col hover:border-blue-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Starter</h3>
-                <p className="text-slate-500 mt-1 text-sm">Perfect for testing the AI capabilities.</p>
+                <h3 className="text-xl font-extrabold text-slate-900">Starter Edition</h3>
+                <p className="text-slate-500 mt-1 text-sm">Ideal for testing layout composition.</p>
               </div>
               <div className="mb-6 pb-6 border-b border-slate-100">
                 <span className="text-4xl font-black text-slate-900">Free</span>
@@ -579,11 +684,11 @@ export default function LandingPage() {
               <ul className="space-y-3.5 flex-1 mb-8">
                 <li className="flex items-center text-slate-600 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-blue-600" /></div>
-                  3 Generations a month
+                  3 Editions per month
                 </li>
                 <li className="flex items-center text-slate-600 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-blue-600" /></div>
-                  Standard Templates
+                  Standard 6-Column Layouts
                 </li>
                 <li className="flex items-center text-slate-600 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-blue-600" /></div>
@@ -592,71 +697,75 @@ export default function LandingPage() {
               </ul>
               <Link href="/login">
                 <button className="w-full py-3 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-400 transition-all text-sm">
-                  Get Started
+                  Get Started Free
                 </button>
               </Link>
             </div>
 
-            {/* Plan 2: Scale (Highlighted Most Popular) */}
-            <div className="bg-[#0b1021] text-white rounded-3xl p-8 flex flex-col shadow-[0_20px_50px_rgba(11,16,33,0.4)] border border-blue-500/40 relative z-10 transform md:-translate-y-2">
+            {/* Plan 2: Regional Press (Highlighted Most Popular) */}
+            <div className="bg-[#0b1021] text-white rounded-3xl p-8 flex flex-col shadow-[0_20px_50px_rgba(11,16,33,0.4)] border border-blue-500/40 relative z-10 transform md:-translate-y-2 hover:-translate-y-3 transition-transform duration-300">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-md">
                 MOST POPULAR
               </div>
               <div className="mb-6">
-                <h3 className="text-xl font-extrabold text-white">Scale</h3>
-                <p className="text-slate-400 mt-1 text-sm">For growing local weekly publications.</p>
+                <h3 className="text-xl font-extrabold text-white">Regional Press</h3>
+                <p className="text-slate-400 mt-1 text-sm">For regional weeklies and community dailies.</p>
               </div>
               <div className="mb-6 pb-6 border-b border-white/10">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">₹5,000</span>
-                  <span className="text-slate-400 text-sm font-medium">/year</span>
+                  <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
+                    {isAnnual ? '₹5,000' : '₹499'}
+                  </span>
+                  <span className="text-slate-400 text-sm font-medium">{isAnnual ? '/year' : '/month'}</span>
                 </div>
               </div>
               <ul className="space-y-3.5 flex-1 mb-8">
                 <li className="flex items-center text-slate-200 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-blue-400" /></div>
-                  30 Generations a month
+                  30 Broadsheet Editions /mo
                 </li>
                 <li className="flex items-center text-slate-200 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-blue-400" /></div>
-                  Custom AI Targeting
+                  Custom Regional Targeting
                 </li>
                 <li className="flex items-center text-slate-200 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-blue-400" /></div>
-                  Priority Email Support
+                  Priority Editorial Support
                 </li>
                 <li className="flex items-center text-slate-200 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-blue-400" /></div>
-                  Advanced Templates
+                  High-Res CMYK PDF Export
                 </li>
               </ul>
               <Link href="/login">
                 <button className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-500/30 transition-all text-sm">
-                  Upgrade to Scale
+                  Subscribe to Regional
                 </button>
               </Link>
             </div>
 
-            {/* Plan 3: Pro */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 flex flex-col hover:border-indigo-300 hover:shadow-xl transition-all duration-300">
+            {/* Plan 3: Daily Broadsheet */}
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 flex flex-col hover:border-indigo-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="mb-6">
-                <h3 className="text-xl font-extrabold text-slate-900">Pro</h3>
-                <p className="text-slate-500 mt-1 text-sm">For daily publishers needing greater reach.</p>
+                <h3 className="text-xl font-extrabold text-slate-900">Daily Broadsheet</h3>
+                <p className="text-slate-500 mt-1 text-sm">For high-frequency dailies and multi-edition syndicates.</p>
               </div>
               <div className="mb-6 pb-6 border-b border-slate-100">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-slate-900">₹9,000</span>
-                  <span className="text-slate-500 text-sm font-medium">/year</span>
+                  <span className="text-4xl font-black text-slate-900">
+                    {isAnnual ? '₹9,000' : '₹899'}
+                  </span>
+                  <span className="text-slate-500 text-sm font-medium">{isAnnual ? '/year' : '/month'}</span>
                 </div>
               </div>
               <ul className="space-y-3.5 flex-1 mb-8">
                 <li className="flex items-center text-slate-600 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-indigo-600" /></div>
-                  60 Generations a month
+                  Unlimited Daily Editions
                 </li>
                 <li className="flex items-center text-slate-600 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-indigo-600" /></div>
-                  Custom Watermarks & Ads
+                  Custom Watermarks & Mastheads
                 </li>
                 <li className="flex items-center text-slate-600 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-indigo-600" /></div>
@@ -664,12 +773,12 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center text-slate-600 text-sm font-medium">
                   <div className="w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center mr-3 shrink-0"><Check className="w-3.5 h-3.5 text-indigo-600" /></div>
-                  Multi-Language Support
+                  Multi-Lingual Broadsheet Support
                 </li>
               </ul>
               <Link href="/login">
                 <button className="w-full py-3 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-400 transition-all text-sm">
-                  Upgrade to Pro
+                  Subscribe to Daily
                 </button>
               </Link>
             </div>
@@ -679,131 +788,107 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          8. WHY PUBLISHERS LOVE US — Testimonials
+          8. TESTIMONIALS — Interactive Carousel with Editorial Proof
       ═══════════════════════════════════════════════════════════════════ */}
       <section id="testimonials" className="py-24 bg-[#070b14] relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16 max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
-              ✦ REAL USER STORIES
+              ✦ EDITORIAL CASE STUDIES
             </div>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
-              Why Publishers Love Us
+              Why Publishers Trust Us
             </h2>
-            <p className="text-slate-400 text-sm font-medium">Trusted by local and regional publishers across India.</p>
+            <p className="text-slate-400 text-sm font-medium">Endorsed by editors and production heads across Indian publications.</p>
           </div>
 
           <div className="relative max-w-5xl mx-auto">
-            {/* Left/Right Carousel Controls */}
-            <div className="hidden lg:flex items-center justify-between absolute -inset-x-12 top-1/2 -translate-y-1/2 pointer-events-none z-20">
-              <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center pointer-events-auto backdrop-blur-md transition-all">
+            {/* Carousel Controls */}
+            <div className="flex items-center justify-between absolute -inset-x-12 top-1/2 -translate-y-1/2 pointer-events-none z-20 hidden lg:flex">
+              <button 
+                onClick={() => setActiveTestimonial((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1))}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center pointer-events-auto backdrop-blur-md transition-all cursor-pointer"
+                aria-label="Previous review"
+              >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center pointer-events-auto backdrop-blur-md transition-all">
+              <button 
+                onClick={() => setActiveTestimonial((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1))}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center pointer-events-auto backdrop-blur-md transition-all cursor-pointer"
+                aria-label="Next review"
+              >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* Testimonial 1 */}
-              <div className="bg-[#0e1424] rounded-3xl p-8 border border-white/10 hover:border-blue-500/30 transition-all flex flex-col justify-between">
-                <div>
-                  <p className="text-slate-300 text-sm leading-relaxed mb-6 font-medium italic">
-                    "Saved us hours of manual work. The generated PDFs look exactly like our printed edition."
-                  </p>
-                  <div className="flex text-amber-400 mb-6">
-                    {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                    RP
-                  </div>
+              {testimonials.map((t, idx) => (
+                <div 
+                  key={idx} 
+                  onClick={() => setActiveTestimonial(idx)}
+                  className={`rounded-3xl p-8 border transition-all duration-300 flex flex-col justify-between cursor-pointer ${
+                    activeTestimonial === idx 
+                      ? 'bg-[#0f172a] border-blue-500/50 shadow-[0_10px_35px_rgba(59,130,246,0.2)] scale-[1.02]' 
+                      : 'bg-[#0e1424] border-white/10 hover:border-white/20 opacity-80 hover:opacity-100'
+                  }`}
+                >
                   <div>
-                    <p className="text-sm font-bold text-white">Ramesh Patil</p>
-                    <p className="text-[11px] text-slate-500">Editor, Lokmat News Edition</p>
+                    <p className="text-slate-300 text-sm leading-relaxed mb-6 font-medium italic">
+                      "{t.quote}"
+                    </p>
+                    <div className="flex text-amber-400 mb-6">
+                      {[...Array(t.rating)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-white/5">
+                    <p className="text-sm font-bold text-white">{t.name}</p>
+                    <p className="text-[11px] text-blue-400 font-medium">{t.title}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{t.location}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Testimonial 2 */}
-              <div className="bg-[#0e1424] rounded-3xl p-8 border border-white/10 hover:border-blue-500/30 transition-all flex flex-col justify-between">
-                <div>
-                  <p className="text-slate-300 text-sm leading-relaxed mb-6 font-medium italic">
-                    "The local news targeting feature is a game-changer. Our readers love the relevance."
-                  </p>
-                  <div className="flex text-amber-400 mb-6">
-                    {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                    SK
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">Sneha Kulkarni</p>
-                    <p className="text-[11px] text-slate-500">Publisher, Pune Chronicle</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Testimonial 3 */}
-              <div className="bg-[#0e1424] rounded-3xl p-8 border border-white/10 hover:border-blue-500/30 transition-all flex flex-col justify-between">
-                <div>
-                  <p className="text-slate-300 text-sm leading-relaxed mb-6 font-medium italic">
-                    "Professional templates, accurate layout, and zero hassle. This is the future of local journalism."
-                  </p>
-                  <div className="flex text-amber-400 mb-6">
-                    {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                    AS
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">Arvind Sharma</p>
-                    <p className="text-[11px] text-slate-500">Founder, City News Network</p>
-                  </div>
-                </div>
-              </div>
-
+              ))}
             </div>
 
-            {/* Pagination dots */}
+            {/* Interactive Pagination Dots */}
             <div className="flex items-center justify-center gap-2 mt-8">
-              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span className="w-2 h-2 rounded-full bg-white/20"></span>
-              <span className="w-2 h-2 rounded-full bg-white/20"></span>
+              {testimonials.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveTestimonial(i)}
+                  className={`h-2 rounded-full transition-all cursor-pointer ${
+                    activeTestimonial === i ? 'w-6 bg-blue-500' : 'w-2 bg-white/20 hover:bg-white/40'
+                  }`}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          9. FINAL CTA SECTION — High-Resolution Newspaper Bundle Mockup
+          9. FINAL CTA SECTION — High-Resolution Newspaper Bundle Render
       ═══════════════════════════════════════════════════════════════════ */}
       <section className="py-20 bg-[#070b14] relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           <div className="rounded-3xl bg-gradient-to-r from-[#0d1630] via-[#111e42] to-[#0d1630] border border-blue-500/30 p-10 lg:p-14 overflow-hidden relative shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
             
             {/* Background cyan neon beam */}
-            <div className="absolute top-0 right-1/3 w-[400px] h-[400px] bg-blue-500/15 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 right-1/3 w-[450px] h-[450px] bg-blue-500/15 rounded-full blur-[110px] pointer-events-none" />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
               
               {/* Left Column */}
               <div className="lg:col-span-7">
                 <h2 className="text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-5 leading-tight" style={{ fontFamily: 'var(--font-playfair)' }}>
-                  Ready to reclaim your publishing weekends?
+                  Ready to reclaim your publishing deadlines?
                 </h2>
                 <p className="text-slate-300 text-base font-normal mb-8 max-w-xl leading-relaxed">
-                  Join hundreds of local newspapers who use Press Management Suite to cut formatting time down to zero.
+                  Join hundreds of local newspapers and presses using Press Management Suite to eliminate formatting delays and print with confidence.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <Link href="/login" className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto text-sm font-bold text-slate-900 bg-white hover:bg-slate-100 px-8 py-3.5 rounded-xl shadow-lg transition-all hover:-translate-y-0.5">
+                    <button className="w-full sm:w-auto text-sm font-bold text-slate-900 bg-white hover:bg-slate-100 px-8 py-3.5 rounded-xl shadow-lg transition-all hover:-translate-y-0.5 animate-pulse-glow">
                       Get Started for Free
                     </button>
                   </Link>
@@ -820,7 +905,7 @@ export default function LandingPage() {
                 <div className="rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-blue-400/30 group">
                   <img 
                     src="/assets/cta_newspaper_stack.jpg" 
-                    alt="Printed broadsheet newspapers bound with glowing Press Management Suite banner" 
+                    alt="Printed broadsheet newspapers bound with Press Management Suite strap" 
                     className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700" 
                   />
                 </div>
@@ -849,7 +934,7 @@ export default function LandingPage() {
                 </span>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed font-medium mb-6 max-w-sm">
-                Empowering Indian publishers with AI-driven tools to format news, faster, and smarter.
+                Empowering Indian publishers with modern automated tools to format news, faster, and smarter.
               </p>
               <div className="flex items-center gap-3 text-slate-400">
                 <a href="#" className="w-8 h-8 rounded-full bg-slate-100 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center transition-colors">
@@ -871,9 +956,9 @@ export default function LandingPage() {
             <div className="md:col-span-2 md:col-start-6">
               <h4 className="font-extrabold text-slate-900 mb-4 text-[11px] tracking-wider uppercase">Platform</h4>
               <ul className="space-y-2.5 text-xs font-semibold text-slate-500">
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Digital Newsroom</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">AI Article Engine</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Ad Integration</a></li>
+                <li><a href="#how-it-works" className="hover:text-blue-600 transition-colors">Editorial Studio</a></li>
+                <li><a href="#features" className="hover:text-blue-600 transition-colors">Pagination Engine</a></li>
+                <li><a href="#features" className="hover:text-blue-600 transition-colors">Rotary PDF Export</a></li>
                 <li><a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a></li>
               </ul>
             </div>
@@ -901,16 +986,16 @@ export default function LandingPage() {
             <div className="md:col-span-2">
               <h4 className="font-extrabold text-slate-900 mb-2 text-[11px] tracking-wider uppercase">Subscribe to our newsletter</h4>
               <p className="text-xs text-slate-500 mb-3">Get product updates and publishing tips.</p>
-              <form onSubmit={(e) => e.preventDefault()} className="flex gap-2">
+              <div className="flex gap-2">
                 <input 
                   type="email" 
                   placeholder="Enter your email" 
                   className="flex-1 min-w-0 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" 
                 />
-                <button type="submit" className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shrink-0">
+                <button type="button" className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shrink-0">
                   <Send className="w-3.5 h-3.5" />
                 </button>
-              </form>
+              </div>
             </div>
 
           </div>
