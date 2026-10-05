@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ],
   },
   // Puppeteer and canvas need serverExternalPackages
-  serverExternalPackages: ['puppeteer', 'canvas'],
+  serverExternalPackages: ['puppeteer', 'puppeteer-core', '@sparticuz/chromium', 'canvas'],
   // Increase API body size limit for file uploads
   experimental: {
     serverActions: {

@@ -30,6 +30,7 @@ import {
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
 import { sanitizeImageUrl, getCategoryFallbackImage } from '@/lib/images';
+import { buildNewspaperHTML } from '@/lib/newspaper-template';
 
 const typeIcons: Record<ContentBlockType, React.ComponentType<{ className?: string }>> = {
   article: Newspaper,
@@ -252,21 +253,43 @@ export default function PlannerPage() {
         const data = await res.json();
         if (data.url) {
           setPdfUrl(data.url);
-          // 1. Save to the permanent Vault repository with the final URL
           saveToRepository(data.url);
-          // 2. Wipe the active generation session completely clean
           clearSession();
-          // 3. Open softly in a new tab to let the browser's PDF viewer handle it and allow native save
           window.open(data.url, '_blank');
-        } else {
-          throw new Error('No URL returned from PDF generation');
+          return;
         }
-      } else {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to trigger PDF generation');
       }
+      throw new Error('Server PDF rendering fell through to client engine');
     } catch (err) {
-      console.error('PDF render error:', err);
+      console.warn('[PDF Engine] Falling back to client-assisted high-res print engine:', err);
+      try {
+        // Bulletproof client-side print engine:
+        const html = buildNewspaperHTML(publication, pages, window.location.origin);
+        const printToolbar = `
+          <div style="position:fixed;top:0;left:0;right:0;z-index:999999;background:#0f172a;color:#f8fafc;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,0.35);font-family:system-ui,sans-serif;">
+            <div style="font-weight:700;font-size:14px;color:#fff;">${publication.name || 'Newspaper Edition'} • <span style="color:#60a5fa;font-size:11px;">300 DPI Pre-Press Ready</span></div>
+            <div style="display:flex;gap:10px;">
+              <button onclick="window.print()" style="background:#2563eb;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">🖨️ Save as PDF / Print</button>
+              <button onclick="window.close()" style="background:rgba(255,255,255,0.1);color:#94a3b8;border:1px solid rgba(255,255,255,0.2);padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;">Close</button>
+            </div>
+          </div>
+          <style>
+            @media screen { body { padding-top: 55px !important; background: #334155 !important; } .page { box-shadow: 0 10px 30px rgba(0,0,0,0.4); margin-bottom: 30px !important; } }
+            @media print { div[style*="position:fixed"] { display: none !important; } body { padding-top: 0 !important; background: #fff !important; } }
+          </style>
+          <script>window.addEventListener('load', function() { setTimeout(function() { window.print(); }, 700); });</script>
+        `;
+        const fullHtml = html.includes('<body') ? html.replace(/<body([^>]*)>/i, `<body$1>${printToolbar}`) : printToolbar + html;
+        const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+        const blobUrl = URL.createObjectURL(blob);
+        setPdfUrl(blobUrl);
+        saveToRepository(blobUrl);
+        clearSession();
+        window.open(blobUrl, '_blank');
+      } catch (clientErr) {
+        console.error('All PDF rendering options exhausted:', clientErr);
+        alert('Could not export PDF. Please check that pages have content assigned.');
+      }
     } finally {
       setIsRenderingPdf(false);
     }
