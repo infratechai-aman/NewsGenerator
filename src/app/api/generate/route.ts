@@ -3,8 +3,7 @@ import { generateWithAI } from '@/lib/openai';
 import { getNewsWithImages } from '@/lib/scraper';
 import { generateSudokuData, renderSudokuToDataUrl } from '@/lib/sudoku';
 import { v4 as uuidv4 } from 'uuid';
-// Removed broken duck-duck-scrape imports to favor the fixed local scraper.
-
+import { sanitizeImageUrl, getCategoryFallbackImage } from '@/lib/images';
 
 const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   english: 'Write all content in English.',
@@ -52,24 +51,21 @@ async function generateArticles(language: string, pageCount: number, targetLocat
 
       const parsed = JSON.parse(result);
 
-      // 1. Fetch real photos from DuckDuckGo primarily
-      // Use the images already fetched by getNewsWithImages at line 38
+      // 1. Fetch real photos from search engine or curated editorial photography
       let articleImages = images.slice(0, isPriority ? 3 : 1).map(img => ({
-        url: img.url,
+        url: sanitizeImageUrl(img.url, parsed.category || topic),
         caption: parsed.imageCaption || `News regarding ${topic}`
       }));
 
-      // Fallback only if absolutely no search engine images were found
+      // Fallback: If no search engine images were found, use verified high-res editorial photography
       if (articleImages.length === 0) {
-        const promptBase = encodeURIComponent(`${searchTopic} India realistic news photography`);
-        for (let j = 0; j < (isPriority ? 3 : 1); j++) {
-          const query = j === 0 ? promptBase : (j === 1 ? promptBase + '%20context' : promptBase + '%20details');
-          articleImages.push({
-            url: `https://pollinations.ai/p/${query}?width=800&height=600&nologo=true&seed=${Math.floor(Math.random() * 100000)}`,
-            caption: parsed.imageCaption || `News regarding ${topic}`
-          });
-        }
+        const fallbackUrl = getCategoryFallbackImage(parsed.category || topic);
+        articleImages.push({
+          url: fallbackUrl,
+          caption: parsed.imageCaption || `News regarding ${topic}`
+        });
       }
+
 
       articles.push({
         id: uuidv4(),

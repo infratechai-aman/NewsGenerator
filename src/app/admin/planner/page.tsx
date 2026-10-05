@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
+import { sanitizeImageUrl, getCategoryFallbackImage } from '@/lib/images';
 
 const typeIcons: Record<ContentBlockType, React.ComponentType<{ className?: string }>> = {
   article: Newspaper,
@@ -101,10 +102,11 @@ export default function PlannerPage() {
       id: article.id,
       type: 'article',
       title: article.headline,
-      thumbnail: article.imageUrl || undefined,
+      thumbnail: sanitizeImageUrl(article.imageUrl, article.category) || undefined,
       data: article,
     });
   });
+
 
   if (generatedContent.horoscope) {
     contentBlocks.push({
@@ -381,11 +383,16 @@ export default function PlannerPage() {
                       <GripVertical className="h-4 w-4 mt-0.5 opacity-50 flex-shrink-0" />
                       {block.thumbnail ? (
                         <img
-                          src={block.thumbnail}
+                          src={sanitizeImageUrl(block.thumbnail, (block.data as any)?.category)}
                           alt=""
                           className="w-10 h-10 rounded object-cover flex-shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.src = getCategoryFallbackImage((block.data as any)?.category || block.title);
+                          }}
                         />
                       ) : (
+
+
                         <div className="w-10 h-10 rounded bg-neutral-800 flex items-center justify-center flex-shrink-0">
                           <Icon className="h-5 w-5" />
                         </div>
@@ -466,26 +473,44 @@ export default function PlannerPage() {
                       >
                         {hasContent ? (
                           <div className="h-full flex flex-col p-2">
-                            <div className="flex items-start justify-between">
+                            <div className="flex items-start justify-between gap-1">
                               <div className="flex-1 min-w-0">
                                 {slot.assignedContent!.thumbnail && (
-                                  <img
-                                    src={slot.assignedContent!.thumbnail}
-                                    alt=""
-                                    className="w-full h-16 object-cover rounded mb-1.5 shadow-sm"
-                                  />
+                                  <div className="w-full h-16 rounded overflow-hidden mb-1.5 shadow-sm bg-slate-100">
+                                    <img
+                                      src={sanitizeImageUrl(slot.assignedContent!.thumbnail, (slot.assignedContent!.data as any)?.category)}
+                                      alt=""
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.src = getCategoryFallbackImage((slot.assignedContent!.data as any)?.category || slot.assignedContent!.title);
+                                      }}
+                                    />
+                                  </div>
                                 )}
                                 <p className="text-[10px] font-bold text-slate-800 line-clamp-2 leading-tight">
                                   {slot.assignedContent!.title}
                                 </p>
-                                <p className="text-[8px] text-blue-600 mt-0.5 uppercase font-bold tracking-wide">
-                                  {slot.assignedContent!.type}
-                                </p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[8px] text-blue-600 uppercase font-bold tracking-wide">
+                                    {slot.assignedContent!.type}
+                                  </span>
+                                  {(slot.assignedContent!.data as any)?.category && (
+                                    <span className="text-[7.5px] text-slate-400 font-semibold truncate">
+                                      • {(slot.assignedContent!.data as any).category}
+                                    </span>
+                                  )}
+                                </div>
+                                {(slot.assignedContent!.data as any)?.content && (
+                                  <p className="text-[7.5px] text-slate-500 mt-1 line-clamp-3 leading-snug font-serif">
+                                    {(slot.assignedContent!.data as any).content}
+                                  </p>
+                                )}
                               </div>
+                              <div className="flex items-center flex-shrink-0">
                                 {slot.assignedContent!.type.includes('article') && (
                                   <button
                                     onClick={() => onImageClick(slot.assignedContent!.data.id)}
-                                    className="p-1 rounded-md hover:bg-blue-50 text-slate-400 hover:text-blue-500 flex-shrink-0 transition-colors mr-1"
+                                    className="p-1 rounded-md hover:bg-blue-50 text-slate-400 hover:text-blue-500 transition-colors mr-0.5"
                                     title="Replace Image"
                                   >
                                     <ImageIcon className="h-3 w-3" />
@@ -498,10 +523,12 @@ export default function PlannerPage() {
                                       slot.id
                                     )
                                   }
-                                  className="ml-0 p-1 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 flex-shrink-0 transition-colors"
+                                  className="p-1 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                                  title="Remove from slot"
                                 >
                                   <X className="h-3 w-3" />
                                 </button>
+                              </div>
                             </div>
                           </div>
                         ) : (

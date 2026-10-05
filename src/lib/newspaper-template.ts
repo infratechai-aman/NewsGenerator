@@ -15,6 +15,7 @@ import {
   WeatherReport,
   TvGuide,
 } from '@/types';
+import { sanitizeImageUrl } from './images';
 
 function formatDate(dateStr: string, language: string): string {
   const date = new Date(dateStr);
@@ -68,10 +69,14 @@ function renderArticle(article: NewsArticle, isLead: boolean = false, colSpan: n
     ? `column-count: ${internalColumns}; column-gap: 15px; column-rule: 0.5pt solid #999;` 
     : '';
 
-  const images = article.images || [];
+  const images = (article.images || []).map(img => ({
+    ...img,
+    url: sanitizeImageUrl(img.url, article.category)
+  }));
   if (images.length === 0 && article.imageUrl) {
-    images.push({ url: article.imageUrl, caption: article.imageCaption || '' });
+    images.push({ url: sanitizeImageUrl(article.imageUrl, article.category), caption: article.imageCaption || '' });
   }
+
 
   let imagesHtml = '';
   if (images.length > 0) {
