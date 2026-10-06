@@ -360,8 +360,12 @@ export const useAppStore = create<AppState>()(
         ];
 
         let artIdx = 0;
-        const updatedPages = pages.map((page) => {
-          const updatedSlots = page.slots.map((slot) => {
+        const updatedPages = (pages || []).map((page, idx) => {
+          const pNum = page?.pageNumber || idx + 1;
+          const cat = page?.category || (pNum === 1 ? 'front-page' : CATEGORY_ORDER[(pNum - 1) % CATEGORY_ORDER.length]);
+          const meta = CATEGORY_META[cat] || CATEGORY_META['politics'];
+          const rawSlots = Array.isArray(page?.slots) && page.slots.length > 0 ? page.slots : slotsForCategory(pNum, cat);
+          const updatedSlots = rawSlots.map((slot) => {
             // Widget slots
             if (slot.id.includes('sudoku') && generatedContent.sudoku) {
               return {
@@ -419,7 +423,15 @@ export const useAppStore = create<AppState>()(
             }
             return slot;
           });
-          return { ...page, slots: updatedSlots };
+          return {
+            ...page,
+            pageNumber: pNum,
+            category: cat,
+            categoryLabel: page?.categoryLabel || meta.label,
+            categoryTagline: page?.categoryTagline || meta.tagline,
+            briefs: Array.isArray(page?.briefs) && page.briefs.length > 0 ? page.briefs : (DEFAULT_BRIEFS_BY_CATEGORY[cat] || []),
+            slots: updatedSlots,
+          };
         });
 
         set({ pages: updatedPages });
@@ -582,6 +594,26 @@ export const useAppStore = create<AppState>()(
           };
         }),
     }),
-    { name: 'news-builder-storage' }
+    {
+      name: 'news-builder-storage',
+      onRehydrateStorage: () => (state) => {
+        if (state && Array.isArray(state.pages)) {
+          state.pages = state.pages.map((p, idx) => {
+            const pNum = p?.pageNumber || idx + 1;
+            const cat = p?.category || (pNum === 1 ? 'front-page' : CATEGORY_ORDER[(pNum - 1) % CATEGORY_ORDER.length]);
+            const meta = CATEGORY_META[cat] || CATEGORY_META['politics'];
+            return {
+              ...p,
+              pageNumber: pNum,
+              category: cat,
+              categoryLabel: p?.categoryLabel || meta.label,
+              categoryTagline: p?.categoryTagline || meta.tagline,
+              briefs: Array.isArray(p?.briefs) && p.briefs.length > 0 ? p.briefs : (DEFAULT_BRIEFS_BY_CATEGORY[cat] || []),
+              slots: Array.isArray(p?.slots) && p.slots.length > 0 ? p.slots : slotsForCategory(pNum, cat),
+            };
+          });
+        }
+      },
+    }
   )
 );

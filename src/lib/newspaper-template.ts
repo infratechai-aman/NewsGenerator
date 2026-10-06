@@ -40,11 +40,13 @@ const CATEGORY_COLORS: Record<string, CategoryColorSet> = {
   'opinion-features':       { bg: '#1f2937', text: '#ffffff', accent: '#4b5563' },
 };
 
-function getCategoryColor(cat: string, theme: NewspaperTheme): CategoryColorSet {
-  if (theme.id === 'dark-edition') {
+function getCategoryColor(cat?: string, theme?: NewspaperTheme): CategoryColorSet {
+  const safeTheme = theme || getThemeById('classic-broadsheet');
+  if (safeTheme.id === 'dark-edition') {
     return { bg: '#1e293b', text: '#f5c842', accent: '#f5c842' };
   }
-  return CATEGORY_COLORS[cat] || { bg: theme.categoryHeaderBg, text: theme.categoryHeaderText, accent: theme.accentColor };
+  const normalized = (cat || 'politics').toLowerCase();
+  return CATEGORY_COLORS[normalized] || { bg: safeTheme.categoryHeaderBg, text: safeTheme.categoryHeaderText, accent: safeTheme.accentColor };
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -107,9 +109,9 @@ function buildSecondaryStorySnippet(content: string, headline: string): string {
 
 // ─── Category Header Strip ────────────────────────────────────────────────────
 function renderCategoryStrip(page: NewspaperPage, theme: NewspaperTheme, pageNum: number): string {
-  const colors = getCategoryColor(page.category, theme);
-  const label = page.categoryLabel || 'NEWS';
-  const tagline = page.categoryTagline || 'Authentic Daily Broadsheet Edition';
+  const colors = getCategoryColor(page?.category, theme);
+  const label = page?.categoryLabel || (pageNum === 1 ? 'FRONT PAGE' : 'NEWS');
+  const tagline = page?.categoryTagline || 'Authentic Daily Broadsheet Edition';
 
   return `
     <div class="cat-strip" style="background:${colors.bg}; color:${colors.text}; border-bottom: 1.5pt solid ${theme.inkColor};">
@@ -175,13 +177,16 @@ function renderInBriefSidebar(briefs: BriefItem[], theme: NewspaperTheme): strin
         IN BRIEF
       </div>
       <div class="ib-list">
-        ${items.map((b) => `
+        ${items.map((b) => {
+          const catName = b?.category || 'NEWS';
+          return `
           <div class="ib-item" style="border-bottom: 0.5pt dotted ${theme.columnRuleColor};">
-            <span class="ib-cat" style="color:${accent}; font-family:${theme.uiFont};">${b.category.toUpperCase()}</span>
-            <h4 class="ib-hl" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${b.headline}</h4>
-            <span class="ib-pg" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.65;">${b.category} &nbsp;▸&nbsp; Pg ${b.page || '2'}</span>
+            <span class="ib-cat" style="color:${accent}; font-family:${theme.uiFont};">${catName.toUpperCase()}</span>
+            <h4 class="ib-hl" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${b?.headline || ''}</h4>
+            <span class="ib-pg" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.65;">${catName} &nbsp;▸&nbsp; Pg ${b?.page || '2'}</span>
           </div>
-        `).join('')}
+        `;
+        }).join('')}
       </div>
 
       <!-- Compact Market Pulse widget pinned at bottom to seamlessly fill sidebar height -->
@@ -204,7 +209,7 @@ function renderInBriefSidebar(briefs: BriefItem[], theme: NewspaperTheme): strin
 }
 
 // ─── Briefs Strip (Bottom Band of Any Page) ───────────────────────────────────
-function getDefaultBriefs(category: string): BriefItem[] {
+function getDefaultBriefs(category?: string): BriefItem[] {
   const cat = (category || '').toLowerCase();
   if (cat.includes('politic')) {
     return [
@@ -270,13 +275,15 @@ function getDefaultBriefs(category: string): BriefItem[] {
   ];
 }
 
-function renderBriefStrip(briefs: BriefItem[], category: string, categoryLabel: string, theme: NewspaperTheme): string {
-  const colors = getCategoryColor(category.toLowerCase(), theme);
-  const title = categoryLabel.split('(')[0].trim().toUpperCase() + ' BRIEFS';
+function renderBriefStrip(briefs: BriefItem[] | undefined, category: string | undefined, categoryLabel: string | undefined, theme: NewspaperTheme): string {
+  const safeCat = (category || 'politics').toLowerCase();
+  const colors = getCategoryColor(safeCat, theme);
+  const rawLabel = categoryLabel || category || 'NEWS';
+  const title = (rawLabel.split('(')[0] || 'NEWS').trim().toUpperCase() + ' BRIEFS';
   const accent = theme.accentColor === '#0a0a0a' ? '#c0392b' : theme.accentColor;
 
-  const defaultItems = getDefaultBriefs(category);
-  const items = briefs && briefs.length > 0 ? briefs.slice(0, 4) : defaultItems;
+  const defaultItems = getDefaultBriefs(safeCat);
+  const items = Array.isArray(briefs) && briefs.length > 0 ? briefs.slice(0, 4) : defaultItems;
 
   return `
     <div class="briefs-strip" style="border-top: 2pt solid ${colors.bg};">
@@ -286,9 +293,9 @@ function renderBriefStrip(briefs: BriefItem[], category: string, categoryLabel: 
       <div class="bs-content">
         ${items.map((b, i) => `
           <div class="bs-card" style="${i < items.length - 1 ? `border-right: 0.5pt solid ${theme.columnRuleColor};` : ''}">
-            <span class="bs-cat" style="color:${accent}; font-family:${theme.uiFont};">${b.category.toUpperCase()}</span>
-            <p class="bs-text" style="color:${theme.inkColor}; font-family:${theme.headlineFont};">${b.headline}</p>
-            ${b.page ? `<span class="bs-pg" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.6;">Pg ${b.page}</span>` : ''}
+            <span class="bs-cat" style="color:${accent}; font-family:${theme.uiFont};">${(b?.category || 'NEWS').toUpperCase()}</span>
+            <p class="bs-text" style="color:${theme.inkColor}; font-family:${theme.headlineFont};">${b?.headline || ''}</p>
+            ${b?.page ? `<span class="bs-pg" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.6;">Pg ${b.page}</span>` : ''}
           </div>
         `).join('')}
       </div>
@@ -1014,28 +1021,45 @@ function getDefaultCategoryArticles(category: string, pageNum: number, pubDate?:
 }
 
 // ─── Page Dispatcher & Construction ──────────────────────────────────────────
-function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: NewspaperTheme): string {
-  const pageNum = page.pageNumber;
+function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: NewspaperTheme): string {
+  const pageNum = rawPage?.pageNumber || 1;
   const isP1 = pageNum === 1;
+  const pageCategory: PageCategory = rawPage?.category || (isP1 ? 'front-page' : 'politics');
+  const pageCategoryLabel = rawPage?.categoryLabel || (isP1 ? 'FRONT PAGE' : 'NEWS');
+  const pageTagline = rawPage?.categoryTagline || 'Authentic Daily Broadsheet Edition';
+  const rawSlots = Array.isArray(rawPage?.slots) ? rawPage.slots : [];
+  const pageBriefs = Array.isArray(rawPage?.briefs) ? rawPage.briefs : [];
+
+  const page: NewspaperPage = {
+    ...rawPage,
+    pageNumber: pageNum,
+    category: pageCategory,
+    categoryLabel: pageCategoryLabel,
+    categoryTagline: pageTagline,
+    slots: rawSlots,
+    briefs: pageBriefs,
+  };
 
   // Extract filled content blocks
   const articles: NewsArticle[] = [];
   page.slots.forEach((s) => {
-    if (s.assignedContent && (s.assignedContent.type === 'article' || s.assignedContent.type === 'manual-article')) {
+    if (s?.assignedContent && (s.assignedContent.type === 'article' || s.assignedContent.type === 'manual-article')) {
       const data = s.assignedContent.data as any;
-      articles.push({
-        id: data.id || s.id,
-        headline: data.headline || s.assignedContent.title,
-        subHeadline: data.subHeadline || data.shortDescription,
-        content: data.content || '',
-        imageUrl: sanitizeImageUrl(data.imageUrl || data.images?.[0]?.url, data.category || page.category, data.headline || s.assignedContent.title),
-        imageCaption: data.imageCaption || data.caption,
-        category: data.category || page.category,
-        source: data.source || data.author || 'Staff Reporter',
-        date: data.date || pub.date,
-        keyHighlights: data.keyHighlights,
-        pullQuote: data.pullQuote,
-      });
+      if (data) {
+        articles.push({
+          id: data.id || s.id,
+          headline: data.headline || s.assignedContent.title || 'Breaking News Update',
+          subHeadline: data.subHeadline || data.shortDescription,
+          content: data.content || '',
+          imageUrl: sanitizeImageUrl(data.imageUrl || data.images?.[0]?.url, data.category || page.category, data.headline || s.assignedContent.title),
+          imageCaption: data.imageCaption || data.caption,
+          category: data.category || page.category,
+          source: data.source || data.author || 'Staff Reporter',
+          date: data.date || pub.date,
+          keyHighlights: data.keyHighlights,
+          pullQuote: data.pullQuote,
+        });
+      }
     }
   });
 
@@ -1535,13 +1559,39 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[], baseUrl: string = ''): string {
-  const theme = getThemeById(pub.themeId || 'classic-broadsheet');
-  const isHindi = pub.language === 'hi' || pub.language === 'bn';
+  const safePub: PublicationConfig = pub || {
+    id: 'default',
+    name: 'The Daily Chronicle',
+    tagline: 'Truth • People • Perspective',
+    date: new Date().toISOString(),
+    edition: 'Pune Edition',
+    volume: '18',
+    issue: '204',
+    price: '₹10',
+    language: 'en',
+    pageCount: 4,
+    themeId: 'classic-broadsheet',
+  };
+  const theme = getThemeById(safePub.themeId || 'classic-broadsheet');
+  const isHindi = safePub.language === 'hi' || safePub.language === 'bn';
   const devanagariStack = "'Noto Sans Devanagari', ";
   const bodyFontFinal = isHindi ? `${devanagariStack}${theme.bodyFont}` : theme.bodyFont;
 
   let pagesHTML = '';
-  const pagesToRender = pages && pages.length > 0 ? pages : [{
+  const rawPages = Array.isArray(pages) && pages.length > 0 ? pages : [];
+  const pagesToRender: NewspaperPage[] = rawPages.length > 0 ? rawPages.map((p, idx) => {
+    const pNum = p?.pageNumber || idx + 1;
+    const isP1 = pNum === 1;
+    return {
+      ...p,
+      pageNumber: pNum,
+      category: p?.category || (isP1 ? 'front-page' : 'politics'),
+      categoryLabel: p?.categoryLabel || (isP1 ? 'FRONT PAGE' : 'NEWS'),
+      categoryTagline: p?.categoryTagline || 'Authentic Daily Broadsheet Edition',
+      briefs: Array.isArray(p?.briefs) ? p.briefs : [],
+      slots: Array.isArray(p?.slots) ? p.slots : [],
+    };
+  }) : [{
     pageNumber: 1,
     category: 'front-page' as PageCategory,
     categoryLabel: 'FRONT PAGE (NATIONAL / LEAD)',
@@ -1554,7 +1604,7 @@ export function buildNewspaperHTML(pub: PublicationConfig, pages: NewspaperPage[
     pagesHTML += `
       <section class="page ${idx > 0 ? 'page-break' : ''}">
         <div class="page-inner">
-          ${renderPage(page, pub, theme)}
+          ${renderPage(page, safePub, theme)}
         </div>
       </section>
     `;
