@@ -341,10 +341,10 @@ function renderPullQuote(quote: string, theme: NewspaperTheme): string {
 }
 
 // ─── Lead Story (Hero Section) ────────────────────────────────────────────────
-function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: string): string {
+function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: string, usedImages?: Set<string>): string {
   const paragraphs = buildFullLeadStoryParagraphs(article.content, article.headline);
   const displayDate = article.date ? shortDate(article.date) : shortDate(pubDate);
-  const imgUrl = sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category, article.headline) || getCategoryFallbackImage(article.category);
+  const imgUrl = sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category, article.headline, 0, usedImages) || getCategoryFallbackImage(article.category, 0, usedImages);
   const caption = article.imageCaption || article.images?.[0]?.caption || 'National leadership and delegates review implementation timelines at the conclave.';
 
   const defaultHighlights = [
@@ -413,6 +413,8 @@ function renderSecondaryStory(
     showImage?: boolean;
     minWords?: number;
     headlineSize?: string;
+    slotIndex?: number;
+    usedImages?: Set<string>;
   }
 ): string {
   if (!article) return '';
@@ -420,10 +422,19 @@ function renderSecondaryStory(
   const thumbHeight = options?.thumbHeight || '30mm';
   const showImage = options?.showImage !== false;
   const headlineSize = options?.headlineSize || '9.6pt';
+  const slotIdx = options?.slotIndex ?? 1;
 
   const snippet = buildRichSecondaryStoryText(article.content, article.headline, minWords);
   const displayDate = article.date ? shortDate(article.date) : shortDate(pubDate);
-  const imgUrl = showImage ? (sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category, article.headline) || getCategoryFallbackImage(article.category)) : null;
+  const imgUrl = showImage
+    ? (sanitizeImageUrl(
+        article.imageUrl || article.images?.[0]?.url,
+        article.category,
+        article.headline,
+        slotIdx,
+        options?.usedImages
+      ) || getCategoryFallbackImage(article.category, slotIdx, options?.usedImages))
+    : null;
 
   return `
     <article class="sec-story-card">
@@ -447,6 +458,7 @@ function renderSecondaryStory(
     </article>
   `;
 }
+
 
 // ─── Special Features & Widgets ──────────────────────────────────────────────
 function renderSudokuWidget(sudoku: SudokuPuzzle | null, theme: NewspaperTheme): string {
@@ -1040,6 +1052,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
   }
 
   let html = '';
+  const pageUsedImages = new Set<string>();
 
   // ══════════════════════════════════════════════════════════════════════════
   // PAGE 1: FRONT PAGE SPECIAL AUTHENTIC BROADSHEET LAYOUT
@@ -1055,7 +1068,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           ${renderInBriefSidebar(page.briefs, theme)}
         </div>
         <div class="fp-hero-right">
-          ${renderLeadStory(articles[0], theme, pub.date)}
+          ${renderLeadStory(articles[0], theme, pub.date, pageUsedImages)}
         </div>
       </div>
 
@@ -1065,15 +1078,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
       <!-- Secondary Row: 3 Equal Columns Across Full Page Width -->
       <div class="fp-secondary-grid">
         <div class="fp-sec-col">
-          ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2', { thumbHeight: '34mm', minWords: 60 })}
+          ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2', { thumbHeight: '34mm', minWords: 60, slotIndex: 1, usedImages: pageUsedImages })}
         </div>
         <div class="col-divider" style="border-right: 0.5pt solid ${theme.columnRuleColor};"></div>
         <div class="fp-sec-col">
-          ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 3', { thumbHeight: '34mm', minWords: 60 })}
+          ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 3', { thumbHeight: '34mm', minWords: 60, slotIndex: 2, usedImages: pageUsedImages })}
         </div>
         <div class="col-divider" style="border-right: 0.5pt solid ${theme.columnRuleColor};"></div>
         <div class="fp-sec-col">
-          ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4', { thumbHeight: '34mm', minWords: 60 })}
+          ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4', { thumbHeight: '34mm', minWords: 60, slotIndex: 3, usedImages: pageUsedImages })}
         </div>
       </div>
 
@@ -1103,7 +1116,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY ${(articles[0].source || 'SPECIAL CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline) || getCategoryFallbackImage(articles[0].category)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage(articles[0].category, 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${pLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1113,7 +1126,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 2', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt', slotIndex: 1, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1122,15 +1135,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55, slotIndex: 2, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55, slotIndex: 3, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 2', { thumbHeight: '28mm', minWords: 55, slotIndex: 4, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1156,7 +1169,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY DIPLOMATIC CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline) || getCategoryFallbackImage(articles[0].category)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage(articles[0].category, 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${iLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1166,7 +1179,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 3', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 3', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt', slotIndex: 1, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1175,15 +1188,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55, slotIndex: 2, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55, slotIndex: 3, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 3', { thumbHeight: '28mm', minWords: 55, slotIndex: 4, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1209,7 +1222,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY FINANCIAL BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'business', articles[0].headline) || getCategoryFallbackImage('business')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'business', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('business', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${bLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1221,7 +1234,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           <div class="ih-col-side">
             ${renderKeyIndicatorsWidget(null, theme)}
             <div style="margin-top: 4px;">
-              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 4', { thumbHeight: '20mm', minWords: 40, headlineSize: '9.2pt' })}
+              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 4', { thumbHeight: '20mm', minWords: 40, headlineSize: '9.2pt', slotIndex: 1, usedImages: pageUsedImages })}
             </div>
           </div>
         </div>
@@ -1231,15 +1244,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55, slotIndex: 2, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55, slotIndex: 3, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 4', { thumbHeight: '28mm', minWords: 55, slotIndex: 4, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1265,7 +1278,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY SCIENCE CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education', articles[0].headline) || getCategoryFallbackImage('education-science')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('education-science', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${eLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1275,7 +1288,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 5', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 5', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt', slotIndex: 1, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1284,15 +1297,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55, slotIndex: 2, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55, slotIndex: 3, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 5', { thumbHeight: '28mm', minWords: 55, slotIndex: 4, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1318,7 +1331,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY SPORTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports', articles[0].headline) || getCategoryFallbackImage('sports')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1531415074868-036b10f01b08?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('sports', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1531415074868-036b10f01b08?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${sLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1330,7 +1343,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           <div class="ih-col-side">
             ${renderSportsStatCard(theme)}
             <div style="margin-top: 4px;">
-              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 6', { thumbHeight: '20mm', minWords: 40, headlineSize: '9.2pt' })}
+              ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 6', { thumbHeight: '20mm', minWords: 40, headlineSize: '9.2pt', slotIndex: 1, usedImages: pageUsedImages })}
             </div>
           </div>
         </div>
@@ -1340,15 +1353,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55, slotIndex: 2, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55, slotIndex: 3, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 6', { thumbHeight: '28mm', minWords: 55, slotIndex: 4, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1374,7 +1387,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY CULTURE & ARTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'entertainment', articles[0].headline) || getCategoryFallbackImage('entertainment-lifestyle')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'entertainment', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('entertainment-lifestyle', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${entLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1384,7 +1397,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 7', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+            ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 7', { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt', slotIndex: 1, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1393,15 +1406,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[2], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55, slotIndex: 2, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[3], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55, slotIndex: 3, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[4], theme, pub.date, 'Page 7', { thumbHeight: '28mm', minWords: 55, slotIndex: 4, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1476,7 +1489,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY ${(articles[0].source || 'CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, page.category, articles[0].headline) || getCategoryFallbackImage(page.category)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, page.category, articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage(page.category, 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${defLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1486,7 +1499,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderSecondaryStory(articles[1], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt' })}
+            ${renderSecondaryStory(articles[1], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '34mm', minWords: 65, headlineSize: '10.5pt', slotIndex: 1, usedImages: pageUsedImages })}
           </div>
         </div>
 
@@ -1495,15 +1508,15 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         <!-- Tier 2: 3 Secondary Stories Across 100% Width -->
         <div class="fp-secondary-grid">
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[2], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[2], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55, slotIndex: 2, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[3], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[3], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55, slotIndex: 3, usedImages: pageUsedImages })}
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="fp-sec-col">
-            ${renderSecondaryStory(articles[4], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55 })}
+            ${renderSecondaryStory(articles[4], theme, pub.date, `Page ${pageNum}`, { thumbHeight: '28mm', minWords: 55, slotIndex: 4, usedImages: pageUsedImages })}
           </div>
         </div>
 
