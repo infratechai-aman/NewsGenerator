@@ -38,6 +38,25 @@ export const THEMATIC_PHOTOS = {
     'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80', // Night City Vigilance & Law Enforcement
     'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1200&q=80', // Official Case Documents & Legal Archives
   ],
+  narcotics_contraband: [
+    'https://images.unsplash.com/photo-1583912267670-6575ad472688?auto=format&fit=crop&w=1200&q=80', // Forensic Chemical Evidence Analysis
+    'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=80', // Law Enforcement Seizure Inspection
+    'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80', // Police Checkpoint Night Vigilance
+  ],
+  chess: [
+    'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=1200&q=80', // Chess Board Pieces Match
+    'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=1200&q=80', // Strategic Wooden Chess Board
+    'https://images.unsplash.com/photo-1560174038-da43ac74f01b?auto=format&fit=crop&w=1200&q=80', // Tournament Chess Grandmaster
+  ],
+  rowing_aquatics: [
+    'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=80', // Rowing Competition on River
+    'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1200&q=80', // Championship Water Sports Athletes
+  ],
+  flyover_bridges: [
+    'https://images.unsplash.com/photo-1545459720-aac8509eb02c?auto=format&fit=crop&w=1200&q=80', // Urban Flyover Overpass Route
+    'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1200&q=80', // Highway Expressway Corridor
+    'https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?auto=format&fit=crop&w=1200&q=80', // Heavy Civil Engineering Bridge
+  ],
   community: [
     'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80', // Citizens Public Forum & Civic Consultation
     'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=80', // Urban City Street & Neighborhood
@@ -214,15 +233,36 @@ export function generateDocumentaryImageUrl(
   const text = `${headline || ''} ${category || ''}`.toLowerCase();
   const locKey = typeof slotIndexOrLocation === 'string' ? slotIndexOrLocation.toLowerCase() : '';
 
-  // 0. City-specific local news targeting (Pune, Mumbai, Delhi)
-  if (locKey.includes('pune') && (text.includes('pune') || text.includes('local') || text.includes('civic') || text.includes('city') || text.includes('lead'))) {
-    return pickUniquePhoto(THEMATIC_PHOTOS.city_landmarks.pune, headline, slotIndex, usedSet);
+  // 1. High-precision Subject Matching ALWAYS PRECEDES generic location landmarks!
+  // A. Chess & Mind Sports
+  if (text.includes('chess') || text.includes('grandmaster') || text.includes('checkmate') || text.includes('fide')) {
+    return pickUniquePhoto(THEMATIC_PHOTOS.chess, headline, slotIndex, usedSet);
   }
-  if (locKey.includes('mumbai') && (text.includes('mumbai') || text.includes('local') || text.includes('civic') || text.includes('city') || text.includes('lead'))) {
-    return pickUniquePhoto(THEMATIC_PHOTOS.city_landmarks.mumbai, headline, slotIndex, usedSet);
+
+  // B. Narcotics / Mephedrone / Drugs / Contraband
+  if (text.includes('mephedrone') || text.includes('md ') || text.includes('narcotic') || text.includes('contraband') || text.includes('peddler') || text.includes('drug haul') || text.includes('drugs worth')) {
+    return pickUniquePhoto(THEMATIC_PHOTOS.narcotics_contraband, headline, slotIndex, usedSet);
   }
-  if (locKey.includes('delhi') && (text.includes('delhi') || text.includes('local') || text.includes('civic') || text.includes('city') || text.includes('lead'))) {
-    return pickUniquePhoto(THEMATIC_PHOTOS.city_landmarks.delhi, headline, slotIndex, usedSet);
+
+  // C. Rowing / Aquatic Sports
+  if (text.includes('rower') || text.includes('rowing') || text.includes('regatta')) {
+    return pickUniquePhoto(THEMATIC_PHOTOS.rowing_aquatics, headline, slotIndex, usedSet);
+  }
+
+  // D. Flyover & Bridge Works
+  if (text.includes('flyover') || text.includes('overpass') || text.includes('katraj flyover') || (text.includes('bridge') && (text.includes('pune') || text.includes('open')))) {
+    return pickUniquePhoto(THEMATIC_PHOTOS.flyover_bridges, headline, slotIndex, usedSet);
+  }
+
+  // E. Police, Murder, Crime, Arrest, FIR, Courts
+  if (
+    text.includes('murder') || text.includes('stabbed') || text.includes('homicide') ||
+    text.includes('killed') || text.includes('brawl') || text.includes('arrest') ||
+    text.includes('police') || text.includes('crime') || text.includes('custody') ||
+    text.includes('remand') || text.includes('fir ') || text.includes('court') ||
+    text.includes('theft') || text.includes('robbery')
+  ) {
+    return pickUniquePhoto(THEMATIC_PHOTOS.police_crime, headline, slotIndex, usedSet);
   }
 
   // 1. Semiconductor / Silicon Chips / Quantum / Hardware

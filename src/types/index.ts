@@ -113,6 +113,18 @@ export interface NewsArticle {
   pullQuote?: string;
   keyHighlights?: string[];
   briefs?: BriefItem[];
+
+  // News Verification Engine Schema
+  location?: string;
+  published_at?: string;
+  source_url?: string;
+  event_date?: string;
+  relevance?: number;
+  verified?: boolean;
+  verification_type?: 'multiple_sources' | 'official_gov' | 'verified_newsroom' | 'single_source';
+  duplicate_group?: string;
+  facts?: string[];
+  quotes?: string[];
 }
 
 export interface DoYouKnowFacts {

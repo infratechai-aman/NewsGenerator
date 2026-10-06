@@ -363,14 +363,14 @@ export const useAppStore = create<AppState>()(
         const pool = [...allArticles];
 
         const CATEGORY_PREFERENCES: Record<string, string[]> = {
-          'front-page': ['local', 'civic', 'politics', 'police', 'community', 'transit'],
-          'politics': ['politics', 'judiciary', 'civic'],
-          'international': ['world', 'international', 'diplomacy'],
-          'business-tech': ['economy', 'technology', 'business', 'transit'],
-          'education-science': ['science', 'education', 'environment'],
-          'sports': ['sports'],
-          'entertainment-lifestyle': ['entertainment', 'culture', 'arts', 'lifestyle'],
-          'opinion-features': ['opinion', 'essay', 'column', 'community'],
+          'front-page': ['local', 'civic', 'crime', 'police', 'community', 'transit', 'general'],
+          'politics': ['politics', 'judiciary', 'governance', 'parliament', 'assembly', 'cabinet'],
+          'international': ['world', 'international', 'diplomacy', 'foreign'],
+          'business-tech': ['business', 'economy', 'technology', 'markets', 'finance'],
+          'education-science': ['science', 'education', 'research', 'space', 'environment'],
+          'sports': ['sports', 'athletics', 'cricket', 'chess', 'rowing', 'football', 'badminton'],
+          'entertainment-lifestyle': ['entertainment', 'culture', 'arts', 'lifestyle', 'cinema', 'heritage'],
+          'opinion-features': ['opinion', 'essay', 'column', 'editorial'],
         };
 
         const updatedPages = (pages || []).map((page, idx) => {
@@ -471,9 +471,23 @@ export const useAppStore = create<AppState>()(
                 return preferredCats.some((pc) => itemCat.includes(pc));
               });
 
-              // 2. If no category match, take next available article from pool
+              // 2. Strict category firewall: NEVER contaminate Politics or World with sports, crime, or local civic!
               if (matchIndex === -1 && pool.length > 0) {
-                matchIndex = 0;
+                const STRICT_FORBIDDEN: Record<string, string[]> = {
+                  'politics': ['sports', 'crime', 'civic', 'local-crime', 'local-civic'],
+                  'international': ['sports', 'crime', 'civic', 'local-crime', 'local-civic'],
+                  'sports': ['politics', 'crime', 'civic', 'business', 'technology', 'world'],
+                  'business-tech': ['sports', 'crime'],
+                  'education-science': ['sports', 'crime'],
+                };
+                const forbidden = STRICT_FORBIDDEN[cat] || [];
+                const compatibleIndex = pool.findIndex((item) => {
+                  const itemCat = ((item.data as any)?.category || '').toLowerCase();
+                  return !forbidden.some((f) => itemCat.includes(f));
+                });
+                if (compatibleIndex !== -1) {
+                  matchIndex = compatibleIndex;
+                }
               }
 
               if (matchIndex !== -1) {
@@ -481,11 +495,9 @@ export const useAppStore = create<AppState>()(
                 return { ...slot, assignedContent: matchedArticle };
               }
 
-              // 3. If pool is exhausted but allArticles exists, recycle an article to prevent any empty void
-              if (allArticles.length > 0) {
-                const fallbackItem = allArticles[rawSlots.indexOf(slot) % allArticles.length];
-                return { ...slot, assignedContent: fallbackItem };
-              }
+              // 3. If no compatible article exists in pool, leave unassigned so that the category-specific
+              // high-quality broadsheet fallback will render cleanly without category leakage!
+              return { ...slot, assignedContent: null };
             }
 
             return slot;

@@ -74,33 +74,23 @@ function cleanArticleText(text?: string): string[] {
     .filter((p) => p.length > 0);
 }
 
-// Ensures a lead story has rich, multi-paragraph broadsheet depth so 3 columns are filled
+// Formats lead story paragraphs authentically based strictly on retrieved facts
 function buildFullLeadStoryParagraphs(content: string, headline: string): string[] {
   const paragraphs = cleanArticleText(content);
-  const totalWords = paragraphs.reduce((sum, p) => sum + p.split(/\s+/).filter(Boolean).length, 0);
-
-  if (totalWords >= 280) {
+  if (paragraphs.length > 0) {
     return paragraphs;
   }
-
-  const p1 = paragraphs[0] || `${headline} has triggered extensive strategic deliberations across governance councils and institutional taskforces in the capital.`;
-  const p2 = paragraphs[1] || `Key parliamentary and sector representatives emphasized the far-reaching structural implications of these developments, noting that policy frameworks and consultative mechanisms established during recent quarters will govern operational execution. Senior administrative secretariats confirmed that inter-agency coordination committees have already initiated targeted briefings to ensure streamlined regional implementation.`;
-  const p3 = paragraphs[2] || `"This marks a foundational inflection point in our programmatic roadmap, establishing a durable balance between immediate developmental imperatives and long-term socio-economic resilience," noted a principal policy advisor during a national press briefing in New Delhi.`;
-  const p4 = paragraphs[3] || `Public sentiment and independent sector analyses reflect widespread engagement, with domestic and global observers welcoming the operational transparency and regulatory clarity. Comprehensive consultative conclaves and state-level implementation summits are slated to commence across seven designated economic corridors over the coming weeks.`;
-
-  return [p1, p2, p3, p4];
+  return [headline];
 }
 
-// Ensures secondary stories have sufficient length to fill below the thumbnail with authentic broadsheet substance
+// Formats secondary story text faithfully without injecting generic filler
 function buildRichSecondaryStoryText(content: string, headline: string, minWords: number = 55): string {
   const paragraphs = cleanArticleText(content);
   const text = paragraphs.join(' ').trim();
-  const words = text.split(/\s+/).filter(Boolean);
-  if (words.length >= minWords) {
-    return words.slice(0, minWords + 20).join(' ') + (words.length > minWords + 20 ? '...' : '');
+  if (text.length > 0) {
+    return text;
   }
-  const base = text || headline;
-  return `${base}. Senior administrative officials and industry delegates welcomed the constructive engagement during strategic review conclaves in the capital. Working groups confirmed that revised statutory frameworks and collaborative implementation channels will bolster operational momentum across regional sectors over the coming financial quarters.`;
+  return headline;
 }
 
 function buildSecondaryStorySnippet(content: string, headline: string): string {
@@ -399,11 +389,15 @@ function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: 
 
       <!-- 3 Columns of Justified Newspaper Body Text -->
       <div class="lead-body-columns" style="column-rule: 0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
-        ${paragraphs.map((p, idx) => `
+        ${paragraphs.map((p, idx) => {
+          const locTag = (article.location || article.locationTag || 'NEW DELHI').toUpperCase();
+          const cleanP = p.replace(/^[A-Z\s,]+:\s*/, '');
+          return `
           <p class="${idx === 0 ? 'first-paragraph' : ''}">
-            ${idx === 0 && !p.startsWith('NEW DELHI') ? `<strong>NEW DELHI:</strong> ` : ''}${p}
+            ${idx === 0 ? `<strong>${locTag}:</strong> ` : ''}${cleanP}
           </p>
-        `).join('')}
+        `;
+        }).join('')}
       </div>
     </div>
   `;
@@ -779,7 +773,10 @@ function renderCultureRoundup(theme: NewspaperTheme): string {
 
 // ─── Category-Specific Rich Article Fallbacks ─────────────────────────────────
 function getDefaultCategoryArticles(category: string, pageNum: number, pubDate?: string, targetLocation?: string): NewsArticle[] {
-  if (targetLocation && targetLocation.trim()) {
+  const catKey = (category || 'politics').toLowerCase();
+  const isFrontOrLocalPage = pageNum === 1 || catKey.includes('front') || catKey.includes('local');
+
+  if (isFrontOrLocalPage && targetLocation && targetLocation.trim()) {
     const loc = targetLocation.trim();
     const localDefaults: Array<{ headline: string; subHeadline: string; snippet: string; cat: string }> = [
       {
@@ -1025,7 +1022,6 @@ function getDefaultCategoryArticles(category: string, pageNum: number, pubDate?:
     ],
   };
 
-  const catKey = (category || 'politics').toLowerCase();
   const matchedKey = Object.keys(defaults).find((k) => catKey.includes(k)) || 'politics';
   const catList = defaults[matchedKey] || defaults.politics;
 
