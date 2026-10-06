@@ -85,6 +85,7 @@ export default function PlannerPage() {
     clearSession,
     updateArticleImage,
     setTheme,
+    autoFillPagesWithContent,
   } = useAppStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -248,15 +249,7 @@ export default function PlannerPage() {
   };
 
   const handleAutoFill = () => {
-    let blockIdx = 0;
-    pages.forEach(page => {
-      page.slots.forEach(slot => {
-        if (!slot.assignedContent && blockIdx < unassignedBlocks.length) {
-          assignContentToSlot(page.pageNumber, slot.id, unassignedBlocks[blockIdx]);
-          blockIdx++;
-        }
-      });
-    });
+    autoFillPagesWithContent(true);
   };
 
   const handleExportPdf = async () => {
@@ -403,7 +396,7 @@ export default function PlannerPage() {
               variant="outline"
               size="sm"
               className="text-indigo-600 border-indigo-200 hover:bg-indigo-50 font-semibold shadow-sm"
-              disabled={unassignedBlocks.length === 0}
+              disabled={contentBlocks.length === 0}
             >
               <Wand2 className="h-4 w-4 mr-1.5" />
               Auto-Fill Layout

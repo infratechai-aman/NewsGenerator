@@ -259,6 +259,7 @@ interface AppState {
   deleteSavedPaper: (id: string) => void;
   clearSession: () => void;
   updateArticleImage: (articleId: string, imageUrl: string) => void;
+  autoFillPagesWithContent: (force?: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -329,8 +330,96 @@ export const useAppStore = create<AppState>()(
       removeManualArticle: (id) =>
         set((s) => ({ manualArticles: s.manualArticles.filter((a) => a.id !== id) })),
 
-      setGeneratedContent: (content) =>
-        set((s) => ({ generatedContent: { ...s.generatedContent, ...content } })),
+      autoFillPagesWithContent: (force = true) => {
+        const { generatedContent, manualArticles, pages } = get();
+        const allArticles = [
+          ...manualArticles.map((a) => ({
+            id: a.id,
+            type: 'manual-article' as const,
+            title: a.headline,
+            thumbnail: a.images?.[0]?.url,
+            data: a,
+          })),
+          ...generatedContent.articles.map((a) => ({
+            id: a.id,
+            type: 'article' as const,
+            title: a.headline,
+            thumbnail: a.imageUrl || undefined,
+            data: a,
+          })),
+        ];
+
+        let artIdx = 0;
+        const updatedPages = pages.map((page) => {
+          const updatedSlots = page.slots.map((slot) => {
+            // Widget slots
+            if (slot.id.includes('sudoku') && generatedContent.sudoku) {
+              return {
+                ...slot,
+                assignedContent: {
+                  id: generatedContent.sudoku.id,
+                  type: 'sudoku' as const,
+                  title: 'Daily Sudoku',
+                  thumbnail: generatedContent.sudoku.imageDataUrl,
+                  data: generatedContent.sudoku,
+                },
+              };
+            }
+            if (slot.id.includes('horoscope') && generatedContent.horoscope) {
+              return {
+                ...slot,
+                assignedContent: {
+                  id: generatedContent.horoscope.id,
+                  type: 'horoscope' as const,
+                  title: 'Daily Horoscope',
+                  data: generatedContent.horoscope,
+                },
+              };
+            }
+            if (slot.id.includes('weather') && generatedContent.weather) {
+              return {
+                ...slot,
+                assignedContent: {
+                  id: generatedContent.weather.id,
+                  type: 'weather' as const,
+                  title: 'Weather Report',
+                  data: generatedContent.weather,
+                },
+              };
+            }
+            if (slot.id.includes('facts') && generatedContent.facts) {
+              return {
+                ...slot,
+                assignedContent: {
+                  id: generatedContent.facts.id,
+                  type: 'facts' as const,
+                  title: 'Do You Know?',
+                  data: generatedContent.facts,
+                },
+              };
+            }
+
+            // News article slots
+            if (force || !slot.assignedContent) {
+              if (artIdx < allArticles.length) {
+                const block = allArticles[artIdx];
+                artIdx++;
+                return { ...slot, assignedContent: block };
+              }
+            }
+            return slot;
+          });
+          return { ...page, slots: updatedSlots };
+        });
+
+        set({ pages: updatedPages });
+      },
+
+      setGeneratedContent: (content) => {
+        set((s) => ({ generatedContent: { ...s.generatedContent, ...content } }));
+        // Automatically auto-fill pages with new articles and widgets
+        get().autoFillPagesWithContent(true);
+      },
 
       assignContentToSlot: (pageNumber, slotId, content) =>
         set((s) => ({

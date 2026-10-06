@@ -344,7 +344,7 @@ function renderPullQuote(quote: string, theme: NewspaperTheme): string {
 function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: string): string {
   const paragraphs = buildFullLeadStoryParagraphs(article.content, article.headline);
   const displayDate = article.date ? shortDate(article.date) : shortDate(pubDate);
-  const imgUrl = sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category) || getCategoryFallbackImage(article.category);
+  const imgUrl = sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category, article.headline) || getCategoryFallbackImage(article.category);
   const caption = article.imageCaption || article.images?.[0]?.caption || 'National leadership and delegates review implementation timelines at the conclave.';
 
   const defaultHighlights = [
@@ -361,7 +361,7 @@ function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: 
       <!-- Top split: Hero Image (left ~68%) + Key Highlights Card (right ~32%) -->
       <div class="lead-media-row">
         <div class="lead-img-col">
-          <img src="${imgUrl}" alt="${article.headline}" class="lead-hero-photo" style="border: 0.5pt solid ${theme.inkColor};" />
+          <img src="${imgUrl}" alt="${article.headline}" class="lead-hero-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1200&q=80';" style="border: 0.5pt solid ${theme.inkColor};" />
           <p class="art-caption" style="font-family:${theme.bodyFont}; color:${theme.inkColor}; opacity:0.75;">${caption}</p>
         </div>
         <div class="lead-kh-col" style="border: 0.75pt solid ${theme.columnRuleColor}; border-left: 3pt solid ${accent}; background:${theme.paperBg === '#111827' ? '#1e293b' : 'rgba(0,0,0,0.02)'};">
@@ -423,7 +423,7 @@ function renderSecondaryStory(
 
   const snippet = buildRichSecondaryStoryText(article.content, article.headline, minWords);
   const displayDate = article.date ? shortDate(article.date) : shortDate(pubDate);
-  const imgUrl = showImage ? (sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category) || getCategoryFallbackImage(article.category)) : null;
+  const imgUrl = showImage ? (sanitizeImageUrl(article.imageUrl || article.images?.[0]?.url, article.category, article.headline) || getCategoryFallbackImage(article.category)) : null;
 
   return `
     <article class="sec-story-card">
@@ -432,7 +432,7 @@ function renderSecondaryStory(
       </h3>
       ${imgUrl ? `
         <div class="sec-img-wrap">
-          <img src="${imgUrl}" alt="${article.headline}" class="sec-thumb" style="border: 0.5pt solid ${theme.inkColor}; height:${thumbHeight};" />
+          <img src="${imgUrl}" alt="${article.headline}" class="sec-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1545459720-aac8509eb02c?auto=format&fit=crop&w=1200&q=80';" style="border: 0.5pt solid ${theme.inkColor}; height:${thumbHeight};" />
         </div>
       ` : ''}
       <div class="sec-byline" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.75;">
@@ -731,7 +731,61 @@ function renderCultureRoundup(theme: NewspaperTheme): string {
 }
 
 // ─── Category-Specific Rich Article Fallbacks ─────────────────────────────────
-function getDefaultCategoryArticles(category: string, pageNum: number, pubDate?: string): NewsArticle[] {
+function getDefaultCategoryArticles(category: string, pageNum: number, pubDate?: string, targetLocation?: string): NewsArticle[] {
+  if (targetLocation && targetLocation.trim()) {
+    const loc = targetLocation.trim();
+    const localDefaults: Array<{ headline: string; subHeadline: string; snippet: string; cat: string }> = [
+      {
+        headline: `${loc} Civic Infrastructure & Road Modernisation Works Cleared by Municipal Body`,
+        subHeadline: `Comprehensive urban connectivity blueprint targets key transit corridors and flyover upgrades`,
+        snippet: `Senior municipal and urban planning authorities finalized execution milestones for major infrastructure projects in ${loc}. Field inspections and technical surveys have been concluded to ensure streamlined execution across high-density road stretches.`,
+        cat: 'civic',
+      },
+      {
+        headline: `${loc} Police & Administrative Taskforce Holds Joint Citizen Safety Summit`,
+        subHeadline: `Enhanced night patrolling and surveillance measures implemented following community dialogue`,
+        snippet: `Senior police officials met local resident associations and trader forums in ${loc} to address civic safety priorities. Rapid-response patrol vehicles and high-resolution surveillance coverage will be deployed across sensitive commercial junctions.`,
+        cat: 'police',
+      },
+      {
+        headline: `${loc} Transit & Metro Corridors Eye Fast-Track Execution Milestone`,
+        subHeadline: `Detailed project reports progress as transport authorities coordinate regional expansion`,
+        snippet: `Transportation planning secretariats reviewed route alignments connecting ${loc} to regional transit hubs. Working groups confirmed that statutory land sanctions and preliminary engineering designs are progressing on schedule.`,
+        cat: 'transit',
+      },
+      {
+        headline: `${loc} Community Forums Deliberate on Water Supply & Civic Amenities`,
+        subHeadline: `Citizen delegations collaborate with municipal engineers to resolve utility grievances`,
+        snippet: `Delegates from residential societies across ${loc} attended a constructive grievance review session. Zonal engineers announced upgraded distribution pumping stations and preventive maintenance drives to ensure uninterrupted utility supply.`,
+        cat: 'community',
+      },
+      {
+        headline: `${loc} Commercial Hubs Report Robust Economic Momentum in Annual Review`,
+        subHeadline: `Retail trade and small enterprise investments demonstrate resilience amid seasonal surge`,
+        snippet: `Commercial associations across ${loc} reported steady business growth supported by festive footfalls and upgraded logistics networks. Industry representatives welcomed streamlined local administrative clearances.`,
+        cat: 'business',
+      },
+    ];
+
+    return localDefaults.map((item, idx) => ({
+      id: `p${pageNum}-local-${idx + 1}`,
+      headline: item.headline,
+      subHeadline: item.subHeadline,
+      content: item.snippet,
+      imageUrl: sanitizeImageUrl(null, item.cat, item.headline),
+      category: item.cat as any,
+      source: idx === 0 ? 'Special Correspondent' : 'Staff Reporter',
+      date: pubDate,
+      keyHighlights: idx === 0 ? [
+        `${loc} municipal review committee clears priority execution schedule`,
+        'Inter-agency coordination ensures minimal disruption to local commuters',
+        'Zonal taskforces deployed for regular field compliance audits',
+        'Phase-wise targets established with bi-weekly progress updates',
+      ] : undefined,
+      pullQuote: idx === 0 ? `Strategic focus on grassroots civic development anchors long-term progress in ${loc}.` : undefined,
+    }));
+  }
+
   const defaults: Record<string, Array<{ headline: string; subHeadline: string; snippet: string }>> = {
     politics: [
       {
@@ -962,7 +1016,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
         headline: data.headline || s.assignedContent.title,
         subHeadline: data.subHeadline || data.shortDescription,
         content: data.content || '',
-        imageUrl: data.imageUrl || data.images?.[0]?.url,
+        imageUrl: sanitizeImageUrl(data.imageUrl || data.images?.[0]?.url, data.category || page.category, data.headline || s.assignedContent.title),
         imageCaption: data.imageCaption || data.caption,
         category: data.category || page.category,
         source: data.source || data.author || 'Staff Reporter',
@@ -974,7 +1028,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
   });
 
   // Guarantee at least 5 rich category-specific articles per page
-  const defaultCategoryArticles = getDefaultCategoryArticles(page.category, pageNum, pub.date);
+  const defaultCategoryArticles = getDefaultCategoryArticles(page.category, pageNum, pub.date, pub.targetLocation);
   if (articles.length === 0) {
     articles.push(...defaultCategoryArticles);
   } else {
@@ -1049,7 +1103,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY ${(articles[0].source || 'SPECIAL CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'politics') || getCategoryFallbackImage('politics')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline) || getCategoryFallbackImage(articles[0].category)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${pLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1102,7 +1156,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY DIPLOMATIC CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'international') || getCategoryFallbackImage('international')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline) || getCategoryFallbackImage(articles[0].category)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${iLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1155,7 +1209,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY FINANCIAL BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'business') || getCategoryFallbackImage('business')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'business', articles[0].headline) || getCategoryFallbackImage('business')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${bLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1211,7 +1265,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY SCIENCE CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education') || getCategoryFallbackImage('education-science')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education', articles[0].headline) || getCategoryFallbackImage('education-science')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${eLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1264,7 +1318,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY SPORTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports') || getCategoryFallbackImage('sports')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports', articles[0].headline) || getCategoryFallbackImage('sports')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1531415074868-036b10f01b08?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${sLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1320,7 +1374,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY CULTURE & ARTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'entertainment') || getCategoryFallbackImage('entertainment-lifestyle')}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'entertainment', articles[0].headline) || getCategoryFallbackImage('entertainment-lifestyle')}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${entLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1422,7 +1476,7 @@ function renderPage(page: NewspaperPage, pub: PublicationConfig, theme: Newspape
                 BY ${(articles[0].source || 'CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, page.category) || getCategoryFallbackImage(page.category)}" class="inner-photo" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, page.category, articles[0].headline) || getCategoryFallbackImage(page.category)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${defLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
