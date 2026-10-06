@@ -703,8 +703,25 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'news-builder-storage',
+      partialize: (state) => ({
+        publication: state.publication,
+        assets: state.assets,
+        manualArticles: state.manualArticles,
+        generatedContent: state.generatedContent,
+        pages: state.pages,
+        activeStep: state.activeStep,
+        repository: state.repository,
+        isNewspaperSaved: state.isNewspaperSaved,
+        hasUnsavedGeneration: state.hasUnsavedGeneration,
+        // Notice: isGenerating, isRenderingPdf, generationLocked are intentionally excluded
+      }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Cleanly release any generation or PDF rendering locks on page refresh
+          state.isGenerating = false;
+          state.isRenderingPdf = false;
+          state.generationLocked = false;
+
           if (!state.generatedContent) {
             state.generatedContent = {
               articles: [],

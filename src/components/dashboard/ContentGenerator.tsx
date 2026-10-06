@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -114,6 +114,12 @@ export default function ContentGenerator() {
   const [currentlyGeneratingName, setCurrentlyGeneratingName] = useState<string>('');
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
+  // Cleanly unlock any stale generating state that may linger from previous browser sessions
+  useEffect(() => {
+    setIsGenerating(false);
+    setGenerationLocked(false);
+  }, [setIsGenerating, setGenerationLocked]);
+
   const getContentStatus = (id: string) => {
     if (errors.has(id)) return 'error';
     if (completedItems.has(id)) return 'completed';
@@ -175,7 +181,7 @@ export default function ContentGenerator() {
   };
 
   const runAutoPilot = async () => {
-    if (generationLocked || isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)) return;
+    if (isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)) return;
 
     setIsGenerating(true);
     setGenerationLocked(true);
@@ -184,13 +190,25 @@ export default function ContentGenerator() {
     setGlobalProgress(15);
     setCurrentlyGeneratingName('Scraping real-time 7-day news syndicates (Google News RSS)...');
 
+    let progressTimer: NodeJS.Timeout | null = null;
+    const controller = new AbortController();
+    const abortTimeout = setTimeout(() => controller.abort(), 60000);
+
     try {
-      setGlobalProgress(35);
-      setCurrentlyGeneratingName('Synthesizing authentic multi-category broadsheet articles with gpt-4o-mini...');
+      // Smoothly advance progress indicator while backend models compute
+      progressTimer = setInterval(() => {
+        setGlobalProgress((prev) => {
+          if (prev < 40) return prev + 6;
+          if (prev < 70) return prev + 4;
+          if (prev < 88) return prev + 2;
+          return prev;
+        });
+      }, 1400);
 
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           type: 'auto-pilot',
           language: publication.language,
@@ -200,7 +218,10 @@ export default function ContentGenerator() {
         }),
       });
 
-      setGlobalProgress(85);
+      clearTimeout(abortTimeout);
+      if (progressTimer) clearInterval(progressTimer);
+
+      setGlobalProgress(92);
       setCurrentlyGeneratingName('Assembling puzzles, market tickers, real briefs, and documentary photography...');
 
       const data = await res.json();
@@ -214,24 +235,28 @@ export default function ContentGenerator() {
         throw new Error(data.error || 'Auto-Pilot generation failed');
       }
     } catch (err) {
+      clearTimeout(abortTimeout);
+      if (progressTimer) clearInterval(progressTimer);
       console.error('Auto-Pilot error:', err);
-      setCurrentlyGeneratingName('Retrying in safe section-by-section mode...');
-      await generateAll();
+      setCurrentlyGeneratingName('Completing sections in safe sequential mode...');
+      await generateAll(true);
     } finally {
+      clearTimeout(abortTimeout);
+      if (progressTimer) clearInterval(progressTimer);
       setIsGenerating(false);
       setGenerationLocked(false);
       setTimeout(() => setCurrentlyGeneratingName(''), 4000);
     }
   };
 
-  const generateAll = async () => {
-    if (generationLocked || isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)) return;
+  const generateAll = async (isInternalFallback = false) => {
+    if (!isInternalFallback && (isGenerating || (hasUnsavedGeneration && !isNewspaperSaved))) return;
 
     setIsGenerating(true);
     setGenerationLocked(true);
     setCompletedItems(new Set());
     setErrors(new Set());
-    setGlobalProgress(0);
+    setGlobalProgress(10);
 
     let completed = 0;
     for (const ct of contentTypes) {
@@ -381,7 +406,21 @@ export default function ContentGenerator() {
                 )}
               </div>
             </div>
-            <span className="text-base font-extrabold text-blue-600">{globalProgress}%</span>
+            <div className="flex items-center gap-3">
+              <span className="text-base font-extrabold text-blue-600">{globalProgress}%</span>
+              <button
+                onClick={() => {
+                  setIsGenerating(false);
+                  setGenerationLocked(false);
+                  setGlobalProgress(0);
+                  setCurrentlyGeneratingName('');
+                }}
+                className="text-xs font-bold text-slate-500 hover:text-red-600 transition-colors px-2.5 py-1 rounded-xl border border-slate-200 hover:border-red-200 hover:bg-red-50 bg-white shadow-2xs"
+                title="Cancel or reset active generation"
+              >
+                Reset / Unlock
+              </button>
+            </div>
           </div>
 
           <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
