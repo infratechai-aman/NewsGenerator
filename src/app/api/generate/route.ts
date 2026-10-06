@@ -279,9 +279,92 @@ async function generateKeyIndicators(language: string) {
   return { id: uuidv4(), indicators: parsed.indicators };
 }
 
+async function polishArticle(rawText: string, draftHeadline: string, language: string, category?: string) {
+  const langInstruction = LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english;
+  const prompt = `You are a chief news editor for a daily broadsheet. Transform the following raw draft/notes into a polished broadsheet article.
+Draft Headline: "${draftHeadline || 'Untitled'}"
+Draft Notes / Raw Text: "${rawText || ''}"
+Category: ${category || 'general'}
+
+${langInstruction}
+Requirements:
+1. Headline: Strong, authentic broadsheet headline (max 12 words).
+2. SubHeadline: Insightful sub-headline deck (10-15 words).
+3. ShortDescription: One crisp sentence summary (15-20 words).
+4. Content: Exactly 120-160 words across 2 structured paragraphs in authentic news broadsheet inverted pyramid style.
+
+Return JSON:
+{
+  "headline": "...",
+  "subHeadline": "...",
+  "shortDescription": "...",
+  "content": "..."
+}`;
+
+  const result = await generateWithAI(
+    `You are a senior broadsheet newspaper editor. ${langInstruction}`,
+    prompt
+  );
+  return JSON.parse(result);
+}
+
+async function suggestHeadlines(topic: string, language: string) {
+  const langInstruction = LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english;
+  const result = await generateWithAI(
+    `You are a newspaper editor creating headlines. ${langInstruction}`,
+    `Suggest 3 compelling, authentic broadsheet newspaper headlines for this topic/story: "${topic}". Return JSON:\n{\n  "suggestions": ["Headline 1", "Headline 2", "Headline 3"]\n}`
+  );
+  return JSON.parse(result);
+}
+
+async function generateAdCreative(brandName: string, category: string, tagline: string, offer: string, language: string) {
+  const langInstruction = LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english;
+  const result = await generateWithAI(
+    `You are an advertising copywriter for a leading print newspaper. ${langInstruction}`,
+    `Create a commercial broadsheet display advertisement creative for:
+Brand Name: "${brandName || 'Premier Brand'}"
+Category: "${category || 'Commercial Retail'}"
+Tagline: "${tagline || ''}"
+Offer / Call to Action: "${offer || ''}"
+
+Return JSON:
+{
+  "headline": "A bold, punchy ad headline (max 8 words)",
+  "tagline": "An inspiring brand tagline (max 10 words)",
+  "offer": "A compelling promotional privilege or discount (max 12 words)",
+  "callToAction": "Clear contact details or visit action (max 8 words)",
+  "sponsorName": "${brandName || 'Sponsor'}"
+}`
+  );
+  const parsed = JSON.parse(result);
+
+  const adCategory = (category || 'business').toLowerCase();
+  const photoUrl = sanitizeImageUrl('', adCategory.includes('health') ? 'education' : adCategory.includes('tech') ? 'technology' : 'business');
+
+  return {
+    id: uuidv4(),
+    ...parsed,
+    imageUrl: photoUrl,
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { type, language, pageCount, targetLocation, articleCount } = await req.json();
+    const body = await req.json();
+    const {
+      type,
+      language = 'english',
+      pageCount,
+      targetLocation,
+      articleCount,
+      rawText,
+      headline,
+      category,
+      topic,
+      brandName,
+      tagline,
+      offer,
+    } = body;
 
     let content;
     let success = true;
@@ -321,6 +404,24 @@ export async function POST(req: NextRequest) {
       case 'keyIndicators':
         content = await generateKeyIndicators(language);
         break;
+      case 'polish-article':
+        content = await polishArticle(rawText, headline, language, category);
+        break;
+      case 'suggest-headlines':
+        content = await suggestHeadlines(topic || headline || rawText, language);
+        break;
+      case 'generate-ad-creative':
+        content = await generateAdCreative(brandName, category, tagline, offer, language);
+        break;
+      case 'generate-article-image': {
+        const query = topic || headline || 'newspaper news';
+        const imgUrl = sanitizeImageUrl(
+          generateDocumentaryImageUrl(query, category || 'general', targetLocation),
+          category || 'general'
+        );
+        content = { imageUrl: imgUrl };
+        break;
+      }
       default:
         return NextResponse.json(
           { error: `Unknown content type: ${type}` },

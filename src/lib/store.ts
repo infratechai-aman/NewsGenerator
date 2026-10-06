@@ -237,6 +237,10 @@ interface AppState {
   isRenderingPdf: boolean;
   activeStep: number;
   repository: SavedNewspaper[];
+  // Workflow lock state
+  isNewspaperSaved: boolean;      // true once current newspaper is saved to repository
+  generationLocked: boolean;       // true while AI is generating content
+  hasUnsavedGeneration: boolean;   // true once content has been generated but not saved
 
   setPublication: (config: Partial<PublicationConfig>) => void;
   updatePublication: (config: Partial<PublicationConfig>) => void;
@@ -254,10 +258,13 @@ interface AppState {
   setIsGenerating: (val: boolean) => void;
   setIsRenderingPdf: (val: boolean) => void;
   setActiveStep: (step: number) => void;
+  setGenerationLocked: (val: boolean) => void;
   resetPages: () => void;
   saveToRepository: (pdfUrl?: string) => void;
   deleteSavedPaper: (id: string) => void;
+  loadSavedPaper: (saved: SavedNewspaper) => void;
   clearSession: () => void;
+  startNewSession: () => void;
   updateArticleImage: (articleId: string, imageUrl: string) => void;
   autoFillPagesWithContent: (force?: boolean) => void;
 }
@@ -301,6 +308,9 @@ export const useAppStore = create<AppState>()(
       isRenderingPdf: false,
       activeStep: 0,
       repository: [],
+      isNewspaperSaved: false,
+      generationLocked: false,
+      hasUnsavedGeneration: false,
 
       setPublication: (config) =>
         set((state) => ({ publication: { ...state.publication, ...config } })),
@@ -416,10 +426,16 @@ export const useAppStore = create<AppState>()(
       },
 
       setGeneratedContent: (content) => {
-        set((s) => ({ generatedContent: { ...s.generatedContent, ...content } }));
+        set((s) => ({
+          generatedContent: { ...s.generatedContent, ...content },
+          hasUnsavedGeneration: true,
+          isNewspaperSaved: false,
+        }));
         // Automatically auto-fill pages with new articles and widgets
         get().autoFillPagesWithContent(true);
       },
+
+      setGenerationLocked: (val) => set({ generationLocked: val }),
 
       assignContentToSlot: (pageNumber, slotId, content) =>
         set((s) => ({
@@ -462,11 +478,51 @@ export const useAppStore = create<AppState>()(
           savedAt: new Date().toISOString(),
           pdfUrl,
         };
-        set((s) => ({ repository: [newSaved, ...s.repository] }));
+        set((s) => ({
+          repository: [newSaved, ...s.repository],
+          isNewspaperSaved: true,
+          hasUnsavedGeneration: false,
+        }));
       },
+
+      startNewSession: () =>
+        set((s) => ({
+          assets: [],
+          manualArticles: [],
+          generatedContent: {
+            articles: [],
+            facts: null,
+            horoscope: null,
+            sudoku: null,
+            crypticClue: null,
+            houseAds: [],
+            quote: null,
+            history: null,
+            weather: null,
+            tvGuide: null,
+            keyIndicators: DEFAULT_KEY_INDICATORS,
+          },
+          pages: createDefaultPages(s.publication.pageCount),
+          activeStep: 0,
+          isNewspaperSaved: false,
+          hasUnsavedGeneration: false,
+          generationLocked: false,
+        })),
 
       deleteSavedPaper: (id) =>
         set((s) => ({ repository: s.repository.filter((p) => p.id !== id) })),
+
+      loadSavedPaper: (saved: SavedNewspaper) =>
+        set({
+          publication: JSON.parse(JSON.stringify(saved.config)),
+          assets: JSON.parse(JSON.stringify(saved.assets || [])),
+          manualArticles: JSON.parse(JSON.stringify(saved.manualArticles || [])),
+          generatedContent: JSON.parse(JSON.stringify(saved.content)),
+          pages: JSON.parse(JSON.stringify(saved.pages)),
+          isNewspaperSaved: true,
+          hasUnsavedGeneration: false,
+          generationLocked: false,
+        }),
 
       clearSession: () =>
         set((s) => ({
@@ -487,6 +543,9 @@ export const useAppStore = create<AppState>()(
           },
           pages: createDefaultPages(s.publication.pageCount),
           activeStep: 0,
+          isNewspaperSaved: false,
+          hasUnsavedGeneration: false,
+          generationLocked: false,
         })),
 
       updateArticleImage: (articleId: string, imageUrl: string) =>

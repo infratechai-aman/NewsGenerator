@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAppStore } from '@/lib/store';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Newspaper,
   Sparkles,
@@ -15,61 +14,80 @@ import {
   Grid3X3,
   HelpCircle,
   Megaphone,
-  PenTool,
   Wand2,
-  Key,
   MapPin,
+  AlertCircle,
+  RefreshCw,
+  Lock,
+  ArrowRight,
+  BookmarkCheck,
+  Layout,
+  Trash2,
 } from 'lucide-react';
 
 const contentTypes = [
   {
     id: 'articles',
     label: 'News Articles',
-    desc: 'AI researches trending news and writes articles',
+    desc: 'AI researches real 7-day trending news and writes multi-paragraph articles',
     icon: Newspaper,
     color: 'from-blue-500 to-cyan-500',
+    bg: 'bg-blue-50 border-blue-200',
+    required: true,
   },
   {
     id: 'horoscope',
     label: 'Daily Horoscope',
-    desc: 'Predictions for all 12 zodiac signs',
+    desc: 'Predictions for all 12 astrological zodiac signs',
     icon: Star,
     color: 'from-purple-500 to-pink-500',
+    bg: 'bg-purple-50 border-purple-200',
+    required: false,
   },
   {
     id: 'facts',
     label: 'Do You Know?',
-    desc: '5 interesting verified facts',
+    desc: '5 verified interesting historical and scientific facts',
     icon: Lightbulb,
     color: 'from-amber-500 to-orange-500',
+    bg: 'bg-amber-50 border-amber-200',
+    required: false,
   },
   {
     id: 'sudoku',
     label: 'Daily Sudoku',
-    desc: 'Generate a Sudoku puzzle grid',
+    desc: 'Interactive mathematical Sudoku puzzle grid',
     icon: Grid3X3,
     color: 'from-emerald-500 to-teal-500',
+    bg: 'bg-emerald-50 border-emerald-200',
+    required: false,
   },
   {
     id: 'cryptic',
     label: 'Cryptic Corner',
-    desc: 'A daily cryptic clue for readers',
+    desc: 'Daily cryptic crossword clue with editorial explanation',
     icon: HelpCircle,
-    color: 'from-red-500 to-rose-500',
+    color: 'from-rose-500 to-red-500',
+    bg: 'bg-rose-50 border-rose-200',
+    required: false,
   },
   {
     id: 'houseAds',
-    label: 'House Ads',
-    desc: 'Auto-generate filler display ads',
+    label: 'House Advertisements',
+    desc: 'Automated print filler ads & subscription notices',
     icon: Megaphone,
     color: 'from-indigo-500 to-violet-500',
+    bg: 'bg-indigo-50 border-indigo-200',
+    required: false,
   },
   {
     id: 'keyIndicators',
-    label: 'Key Market Indicators',
-    desc: 'Sensex, Nifty, USD/INR, Gold, Crude & Bond rates',
+    label: 'Market Indicators',
+    desc: 'Sensex, Nifty 50, USD/INR, Gold, Crude & 10Y G-Sec rates',
     icon: Grid3X3,
     color: 'from-emerald-600 to-green-500',
+    bg: 'bg-green-50 border-green-200',
+    required: false,
   },
 ];
 
@@ -81,19 +99,44 @@ export default function ContentGenerator() {
     isGenerating,
     setIsGenerating,
     updatePublication,
-    assets,
+    generationLocked,
+    setGenerationLocked,
+    hasUnsavedGeneration,
+    isNewspaperSaved,
+    saveToRepository,
+    startNewSession,
   } = useAppStore();
+
   const [generatingItems, setGeneratingItems] = useState<Set<string>>(new Set());
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+  const [errors, setErrors] = useState<Set<string>>(new Set());
+  const [globalProgress, setGlobalProgress] = useState(0);
+  const [currentlyGeneratingName, setCurrentlyGeneratingName] = useState<string>('');
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const getContentStatus = (id: string) => {
+    if (errors.has(id)) return 'error';
     if (completedItems.has(id)) return 'completed';
     if (generatingItems.has(id)) return 'generating';
+    if (id === 'articles' && generatedContent.articles.length > 0) return 'completed';
+    if (id === 'horoscope' && generatedContent.horoscope) return 'completed';
+    if (id === 'facts' && generatedContent.facts) return 'completed';
+    if (id === 'sudoku' && generatedContent.sudoku) return 'completed';
+    if (id === 'cryptic' && generatedContent.crypticClue) return 'completed';
+    if (id === 'houseAds' && generatedContent.houseAds.length > 0) return 'completed';
+    if (id === 'keyIndicators' && generatedContent.keyIndicators) return 'completed';
     return 'pending';
   };
 
-  const generateContent = async (typeId: string) => {
+  const generateSingle = async (typeId: string): Promise<boolean> => {
+    const itemMeta = contentTypes.find((ct) => ct.id === typeId);
+    setCurrentlyGeneratingName(itemMeta?.label || typeId);
     setGeneratingItems((prev) => new Set(prev).add(typeId));
+    setErrors((prev) => {
+      const n = new Set(prev);
+      n.delete(typeId);
+      return n;
+    });
 
     try {
       const res = await fetch('/api/generate', {
@@ -113,9 +156,14 @@ export default function ContentGenerator() {
       if (data.success) {
         setGeneratedContent({ [typeId]: data.content });
         setCompletedItems((prev) => new Set(prev).add(typeId));
+        return true;
+      } else {
+        throw new Error(data.error || 'Generation failed');
       }
     } catch (err) {
       console.error(`Error generating ${typeId}:`, err);
+      setErrors((prev) => new Set(prev).add(typeId));
+      return false;
     } finally {
       setGeneratingItems((prev) => {
         const next = new Set(prev);
@@ -126,160 +174,364 @@ export default function ContentGenerator() {
   };
 
   const generateAll = async () => {
+    if (generationLocked || isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)) return;
+
     setIsGenerating(true);
+    setGenerationLocked(true);
+    setCompletedItems(new Set());
+    setErrors(new Set());
+    setGlobalProgress(0);
+
+    let completed = 0;
     for (const ct of contentTypes) {
-      await generateContent(ct.id);
+      await generateSingle(ct.id);
+      completed++;
+      setGlobalProgress(Math.round((completed / contentTypes.length) * 100));
     }
+
     setIsGenerating(false);
+    setGenerationLocked(false);
+    setCurrentlyGeneratingName('');
+    setGlobalProgress(100);
   };
 
-  const userAdsCount = assets.filter((a) => a.type === 'ad').length;
+  const handleQuickSave = () => {
+    saveToRepository();
+  };
+
+  const handleStartSecondNewspaper = () => {
+    startNewSession();
+  };
+
   const articlesGenerated = generatedContent.articles.length;
+  const completedCount = contentTypes.filter((ct) => getContentStatus(ct.id) === 'completed').length;
+  const isAllDone = completedCount === contentTypes.length;
 
   return (
-    <Card className="glass-card border-0">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-bold flex items-center justify-between text-slate-800">
-          <span className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-sm font-bold text-white shadow-md shadow-blue-500/20">
-              <Sparkles className="h-4 w-4" />
-            </span>
-            AI Content Pipeline
-          </span>
-          {publication.generationMode === 'ai' && (
+    <div className="space-y-6">
+
+      {/* 1. WORKFLOW LOCK BANNER (If newspaper has unsaved generated content) */}
+      {hasUnsavedGeneration && !isNewspaperSaved && !isGenerating && (
+        <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 rounded-3xl shadow-xs">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-amber-500/20">
+                <Lock className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-amber-950">Active Edition Locked — Save Required</h4>
+                  <span className="text-[10px] font-bold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Unsaved Draft
+                  </span>
+                </div>
+                <p className="text-xs text-amber-800 mt-1 max-w-xl leading-relaxed">
+                  Your current newspaper edition has generated content. To prevent accidental overwrites, save this edition to your vault or export the PDF before starting a 2nd newspaper.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-wrap self-end md:self-auto">
+              <Link href="/admin/planner">
+                <Button className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs h-10 px-4 rounded-xl shadow-xs transition-all">
+                  <Layout className="h-3.5 w-3.5 mr-1.5" />
+                  Open Planner & Export PDF
+                </Button>
+              </Link>
+
+              <Button
+                onClick={handleQuickSave}
+                variant="outline"
+                className="bg-white border-amber-300 text-amber-900 hover:bg-amber-100 font-bold text-xs h-10 px-4 rounded-xl transition-all"
+              >
+                <BookmarkCheck className="h-3.5 w-3.5 mr-1.5 text-amber-600" />
+                Quick Save to Vault
+              </Button>
+
+              <button
+                onClick={() => setShowDiscardConfirm(true)}
+                className="text-xs font-semibold text-amber-700 hover:text-red-600 px-2 py-1.5 transition-colors"
+                title="Discard current draft"
+              >
+                Discard & Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. SAVED CONFIRMATION BANNER (Enables starting 2nd newspaper cleanly) */}
+      {isNewspaperSaved && !isGenerating && (
+        <div className="p-5 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/90 rounded-3xl shadow-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-emerald-600/20">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-emerald-950">Newspaper Saved to Vault!</h4>
+                <p className="text-xs text-emerald-700 mt-0.5">
+                  Your edition is preserved in the repository. You can now start generating a fresh 2nd newspaper edition.
+                </p>
+              </div>
+            </div>
+
             <Button
-              onClick={generateAll}
-              disabled={isGenerating}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-md shadow-blue-500/20"
+              onClick={handleStartSecondNewspaper}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 px-5 rounded-xl shadow-md shadow-emerald-600/20 transition-all hover:scale-[1.02] shrink-0"
             >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate All Content
-                </>
-              )}
-            </Button>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        
-        {publication.generationMode === 'manual' ? (
-          <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center bg-slate-50">
-            <PenTool className="h-10 w-10 mx-auto text-blue-400 mb-3" />
-            <h3 className="text-base font-bold text-slate-800">Manual Mode Active</h3>
-            <p className="text-sm text-slate-500 max-w-md mx-auto mt-2">
-              The AI generation pipeline is disabled because you are in Manual Mode. Use the "Asset Library" step to manually write articles and upload images.
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-6 border-slate-200 text-blue-600 hover:bg-blue-50"
-              onClick={() => updatePublication({ generationMode: 'ai' })}
-            >
-              <Wand2 className="h-4 w-4 mr-2" /> Switch to AI Auto-Pilot
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+              Start 2nd Newspaper (New Session)
             </Button>
           </div>
-        ) : (
-          <>
-            {/* Target Location Quick-Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-indigo-50/70 border border-indigo-200/80 p-3 rounded-xl mb-3 shadow-inner">
-              <div className="flex items-center gap-2 flex-1">
-                <MapPin className="h-4 w-4 text-indigo-600 flex-shrink-0" />
-                <span className="text-xs font-bold text-indigo-950 whitespace-nowrap">Target Location:</span>
-                <input
-                  type="text"
-                  placeholder="e.g. Kondhwa, Pune, Mumbai (Leave blank for National)"
-                  value={publication.targetLocation || ''}
-                  onChange={(e) => updatePublication({ targetLocation: e.target.value })}
-                  className="bg-white border border-indigo-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 h-8 shadow-sm"
-                />
+        </div>
+      )}
+
+      {/* 3. TARGET LOCATION BAR */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gradient-to-r from-indigo-50/70 via-blue-50/60 to-slate-50 border border-indigo-200/80 p-4 rounded-3xl shadow-xs">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="w-9 h-9 rounded-2xl bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm shadow-indigo-600/20">
+            <MapPin className="h-4 w-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-indigo-950">Target Region / City Edition</span>
+              <span className="text-[10px] text-indigo-600 font-semibold">(Customizes real-time news & weather)</span>
+            </div>
+            <input
+              type="text"
+              placeholder="e.g. Pune, Mumbai, Bengaluru, Delhi (blank = National Edition)"
+              value={publication.targetLocation || ''}
+              onChange={(e) => updatePublication({ targetLocation: e.target.value })}
+              className="w-full bg-white border border-indigo-200/90 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+              disabled={isGenerating}
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-800 bg-white px-3.5 py-2 rounded-xl border border-indigo-100 shadow-2xs whitespace-nowrap self-start sm:self-auto">
+          <span>⚡ Live 7-Day Breaking Syndicate</span>
+        </div>
+      </div>
+
+      {/* 4. ACTIVE GENERATION PROGRESS BAR */}
+      {isGenerating && (
+        <div className="bg-white border border-blue-200 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+              <div>
+                <p className="text-sm font-bold text-slate-900">
+                  Synthesizing Newspaper Broadsheet Content...
+                </p>
+                {currentlyGeneratingName && (
+                  <p className="text-xs text-blue-600 font-semibold mt-0.5">
+                    Currently writing: <strong>{currentlyGeneratingName}</strong>
+                  </p>
+                )}
               </div>
-              <span className="text-[11px] font-semibold text-indigo-700 bg-white px-2 py-1 rounded-md border border-indigo-100 shadow-xs self-start sm:self-auto">
-                ⚡ Real 7-day live news + local photos
-              </span>
             </div>
+            <span className="text-base font-extrabold text-blue-600">{globalProgress}%</span>
+          </div>
 
-            {/* Status summary */}
-            <div className="flex gap-2 mb-2">
-              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
-                {articlesGenerated} ai articles
-              </Badge>
-              <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200">
-                {userAdsCount} user ads
-              </Badge>
-              <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                {completedItems.size}/{contentTypes.length} generated
-              </Badge>
+          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 rounded-full transition-all duration-500"
+              style={{ width: `${globalProgress}%` }}
+            />
+          </div>
+          <p className="text-xs text-slate-400 mt-3 font-medium">
+            Generating journalist prose, puzzles, horoscopes, and matching high-res documentary photography. Please do not close this window.
+          </p>
+        </div>
+      )}
+
+      {/* 5. MAIN CONTENT PIPELINE CARD */}
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+        {/* Card Header */}
+        <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">AI Broadsheet Pipeline</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {articlesGenerated > 0
+                  ? `${articlesGenerated} articles generated • ${completedCount}/${contentTypes.length} broadsheet sections complete`
+                  : 'Synthesize all 7 editorial sections together or trigger items individually'}
+              </p>
+            </div>
+          </div>
 
-            {/* Content generation cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {contentTypes.map((ct) => {
-                const status = getContentStatus(ct.id);
-                const Icon = ct.icon;
-                return (
-                  <div
-                    key={ct.id}
-                    className={`relative rounded-xl p-4 border transition-all duration-200 ${
-                      status === 'completed'
-                        ? 'border-emerald-200 bg-emerald-50 shadow-sm'
-                        : status === 'generating'
-                        ? 'border-blue-300 bg-blue-50 shadow-sm'
-                        : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${ct.color} flex items-center justify-center flex-shrink-0 shadow-sm`}
-                        >
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-800">
-                            {ct.label}
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {ct.desc}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex-shrink-0 flex items-center">
-                        {status === 'completed' ? (
-                          <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-100 px-2 py-1 rounded-md text-[10px] font-bold">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            DONE
-                          </div>
-                        ) : status === 'generating' ? (
-                          <div className="flex items-center gap-1.5 text-blue-600 bg-blue-100 px-2 py-1 rounded-md text-[10px] font-bold">
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            WORKING
-                          </div>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 text-[11px] font-bold text-slate-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50 border-slate-200"
-                            onClick={() => generateContent(ct.id)}
-                            disabled={isGenerating}
-                          >
-                            Generate
-                          </Button>
+          {/* Primary Action Button */}
+          <Button
+            onClick={generateAll}
+            disabled={isGenerating || generationLocked || (hasUnsavedGeneration && !isNewspaperSaved)}
+            className={`font-bold text-xs h-11 px-6 rounded-xl shadow-md transition-all ${
+              isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)
+                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25 hover:scale-[1.01]'
+            }`}
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Generating Broadsheet...
+              </>
+            ) : hasUnsavedGeneration && !isNewspaperSaved ? (
+              <>
+                <Lock className="h-4 w-4 mr-2" />
+                Save Current Edition First
+              </>
+            ) : isAllDone ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Regenerate All Sections
+              </>
+            ) : (
+              <>
+                <Wand2 className="h-4 w-4 mr-2" />
+                Generate Entire Newspaper
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Content Type Grid */}
+        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          {contentTypes.map((ct) => {
+            const status = getContentStatus(ct.id);
+            const Icon = ct.icon;
+            const isItemGenerating = generatingItems.has(ct.id);
+
+            return (
+              <div
+                key={ct.id}
+                className={`relative rounded-2xl border p-4 transition-all duration-200 ${
+                  status === 'completed'
+                    ? 'border-emerald-200 bg-emerald-50/50'
+                    : status === 'generating'
+                    ? 'border-blue-300 bg-blue-50/60 shadow-xs'
+                    : status === 'error'
+                    ? 'border-red-200 bg-red-50/60'
+                    : 'border-slate-200/90 bg-white hover:border-slate-300 hover:shadow-2xs'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${ct.color} flex items-center justify-center flex-shrink-0 shadow-2xs`}>
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-900 truncate">{ct.label}</p>
+                        {ct.required && (
+                          <span className="text-[9px] font-extrabold text-blue-700 bg-blue-100 border border-blue-200 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                            Lead Core
+                          </span>
                         )}
                       </div>
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">{ct.desc}</p>
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="flex-shrink-0">
+                    {status === 'completed' ? (
+                      <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-100/90 border border-emerald-200 px-2.5 py-1.5 rounded-xl text-[11px] font-bold">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Ready</span>
+                      </div>
+                    ) : status === 'generating' ? (
+                      <div className="flex items-center gap-1.5 text-blue-700 bg-blue-100 px-2.5 py-1.5 rounded-xl text-[11px] font-bold">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Drafting...</span>
+                      </div>
+                    ) : status === 'error' ? (
+                      <button
+                        onClick={() => generateSingle(ct.id)}
+                        disabled={isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)}
+                        className="flex items-center gap-1.5 text-rose-700 bg-rose-100 hover:bg-rose-200 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors disabled:opacity-50"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        <span>Retry</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => generateSingle(ct.id)}
+                        disabled={isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)}
+                        className="flex items-center gap-1.5 text-slate-700 hover:text-blue-700 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        <span>Generate</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer Summary with Next Step Link */}
+        <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <span>{completedCount}/{contentTypes.length} Sections Ready</span>
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+            {articlesGenerated > 0 && (
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600">
+                <Newspaper className="h-4 w-4" />
+                <span>{articlesGenerated} Live Articles</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {completedCount > 0 && (
+              <Link href="/admin/planner">
+                <button className="flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 transition-colors">
+                  <span>Continue to Page Planner</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Discard Modal */}
+      {showDiscardConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 animate-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
+              <Trash2 className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 text-center mb-1.5">Discard Active Draft?</h3>
+            <p className="text-xs text-slate-500 text-center leading-relaxed mb-5">
+              This will erase current generated stories and reset the session so you can generate a brand new newspaper.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setShowDiscardConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors"
+              >
+                Keep Draft
+              </button>
+              <button
+                onClick={() => {
+                  startNewSession();
+                  setShowDiscardConfirm(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition-colors shadow-xs"
+              >
+                Discard & Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
   );
 }

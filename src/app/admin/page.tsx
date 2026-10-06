@@ -124,7 +124,15 @@ const QUICK_ACTIONS = [
 ];
 
 export default function AdminOverview() {
-  const { publication, generatedContent, manualArticles } = useAppStore();
+  const { 
+    publication, 
+    generatedContent, 
+    manualArticles,
+    hasUnsavedGeneration,
+    isNewspaperSaved,
+    saveToRepository,
+    startNewSession,
+  } = useAppStore();
   const [user, setUser] = useState<User | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -173,6 +181,64 @@ export default function AdminOverview() {
         {/* Main Column */}
         <div className="flex-1 w-full space-y-6 md:space-y-8">
           
+          {/* Active Workflow Alert Banner */}
+          {hasUnsavedGeneration && !isNewspaperSaved && (
+            <div className="p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-amber-950">
+                    Broadsheet Draft in Progress • {articlesSaved} Content Blocks Ready
+                  </p>
+                  <p className="text-[11px] text-amber-800">
+                    Finish page layout or save to vault before generating your next newspaper edition.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Link href="/admin/planner">
+                  <button className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs">
+                    Open Page Planner →
+                  </button>
+                </Link>
+                <button
+                  onClick={() => saveToRepository()}
+                  className="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-900 hover:bg-amber-50 text-xs font-bold transition-all"
+                >
+                  Save to Vault
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isNewspaperSaved && (
+            <div className="p-4 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-300/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-emerald-950">
+                    Edition Successfully Archived in Broadsheet Vault
+                  </p>
+                  <p className="text-[11px] text-emerald-800">
+                    You can now launch a fresh 2nd newspaper session with new articles.
+                  </p>
+                </div>
+              </div>
+              <Link href="/admin/generator">
+                <button
+                  onClick={() => startNewSession()}
+                  className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs shrink-0"
+                >
+                  Start 2nd Newspaper →
+                </button>
+              </Link>
+            </div>
+          )}
+
           {/* 1. FEATURED HERO BANNER CAROUSEL (Directly inspired by reference UI) */}
           <div className="relative rounded-3xl overflow-hidden shadow-lg bg-slate-900 text-white min-h-[200px] sm:min-h-[230px] flex flex-col justify-between p-5 md:p-7 border border-slate-800 group">
             

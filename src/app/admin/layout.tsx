@@ -43,7 +43,7 @@ const MOBILE_NAV_ITEMS = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { publication, generatedContent } = useAppStore();
+  const { publication, generatedContent, hasUnsavedGeneration, isNewspaperSaved } = useAppStore();
   
   const [user, setUser] = useState<User | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -99,11 +99,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin');
             const Icon = item.icon;
+            const showDot = item.href === '/admin/generator' && hasUnsavedGeneration && !isNewspaperSaved;
 
             return (
               <Link key={item.href} href={item.href}>
                 <div
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                     isActive
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
                       : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -111,6 +112,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   <Icon className={`h-[18px] w-[18px] ${isActive ? 'text-white' : 'text-slate-400'}`} />
                   {item.label}
+                  {showDot && (
+                    <span className="absolute top-1.5 right-2.5 w-2 h-2 bg-amber-400 rounded-full shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                  )}
                 </div>
               </Link>
             );

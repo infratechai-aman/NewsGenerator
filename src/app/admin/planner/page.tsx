@@ -30,6 +30,7 @@ import {
   Eye,
   Upload,
   Check,
+  BookmarkCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
@@ -82,7 +83,9 @@ export default function PlannerPage() {
     isRenderingPdf,
     setIsRenderingPdf,
     saveToRepository,
-    clearSession,
+    isNewspaperSaved,
+    hasUnsavedGeneration,
+    startNewSession,
     updateArticleImage,
     setTheme,
     autoFillPagesWithContent,
@@ -91,6 +94,7 @@ export default function PlannerPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [showSavedBanner, setShowSavedBanner] = useState(false);
 
   const [activePageIdx, setActivePageIdx] = useState(0);
   const [draggedBlock, setDraggedBlock] = useState<ContentBlock | null>(null);
@@ -270,8 +274,8 @@ export default function PlannerPage() {
         const data = await res.json();
         if (data.url) {
           setPdfUrl(data.url);
-          saveToRepository(data.url);
-          clearSession();
+          saveToRepository(data.url); // This sets isNewspaperSaved = true
+          setShowSavedBanner(true);
           window.open(data.url, '_blank');
           return;
         }
@@ -300,8 +304,8 @@ export default function PlannerPage() {
         const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
         const blobUrl = URL.createObjectURL(blob);
         setPdfUrl(blobUrl);
-        saveToRepository(blobUrl);
-        clearSession();
+        saveToRepository(blobUrl); // This sets isNewspaperSaved = true
+        setShowSavedBanner(true);
         window.open(blobUrl, '_blank');
       } catch (clientErr) {
         console.error('All PDF rendering options exhausted:', clientErr);
@@ -355,6 +359,30 @@ export default function PlannerPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Saved Success Banner */}
+      {showSavedBanner && (
+        <div className="bg-emerald-600 text-white px-6 py-3 flex items-center justify-between gap-4 shadow-md z-50">
+          <div className="flex items-center gap-3">
+            <Check className="h-5 w-5 text-emerald-200 flex-shrink-0" />
+            <p className="text-sm font-bold">Newspaper saved to vault! PDF exported successfully.</p>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button
+              onClick={() => { startNewSession(); setShowSavedBanner(false); }}
+              className="flex items-center gap-2 text-sm font-bold text-emerald-900 bg-white hover:bg-emerald-50 px-4 py-2 rounded-xl transition-colors"
+            >
+              Start New Newspaper
+            </button>
+            <button
+              onClick={() => setShowSavedBanner(false)}
+              className="p-1.5 text-emerald-200 hover:text-white transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
         <div className="max-w-full mx-auto px-6 h-14 flex items-center justify-between">
@@ -421,6 +449,18 @@ export default function PlannerPage() {
                 View PDF
               </Button>
             )}
+            <Button
+              onClick={() => {
+                saveToRepository(pdfUrl || undefined);
+                setShowSavedBanner(true);
+              }}
+              variant="outline"
+              size="sm"
+              className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 font-semibold shadow-sm"
+            >
+              <BookmarkCheck className="h-4 w-4 mr-1.5 text-emerald-600" />
+              Save to Vault
+            </Button>
             <Button
               onClick={handleExportPdf}
               disabled={isRenderingPdf}
