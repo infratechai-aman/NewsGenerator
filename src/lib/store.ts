@@ -359,15 +359,46 @@ export const useAppStore = create<AppState>()(
           })),
         ];
 
-        let artIdx = 0;
+        // Track available pool of articles for category-aware distribution
+        const pool = [...allArticles];
+
+        const CATEGORY_PREFERENCES: Record<string, string[]> = {
+          'front-page': ['local', 'civic', 'politics', 'police', 'community', 'transit'],
+          'politics': ['politics', 'judiciary', 'civic'],
+          'international': ['world', 'international', 'diplomacy'],
+          'business-tech': ['economy', 'technology', 'business', 'transit'],
+          'education-science': ['science', 'education', 'environment'],
+          'sports': ['sports'],
+          'entertainment-lifestyle': ['entertainment', 'culture', 'arts', 'lifestyle'],
+          'opinion-features': ['opinion', 'essay', 'column', 'community'],
+        };
+
         const updatedPages = (pages || []).map((page, idx) => {
           const pNum = page?.pageNumber || idx + 1;
           const cat = page?.category || (pNum === 1 ? 'front-page' : CATEGORY_ORDER[(pNum - 1) % CATEGORY_ORDER.length]);
           const meta = CATEGORY_META[cat] || CATEGORY_META['politics'];
           const rawSlots = Array.isArray(page?.slots) && page.slots.length > 0 ? page.slots : slotsForCategory(pNum, cat);
+          const preferredCats = CATEGORY_PREFERENCES[cat] || [];
+
           const updatedSlots = rawSlots.map((slot) => {
-            // Widget slots
-            if (slot.id.includes('sudoku') && generatedContent.sudoku) {
+            const idLower = (slot.id || '').toLowerCase();
+            const labelLower = (slot.label || '').toLowerCase();
+
+            // Widget slot: Key Indicators (Page 4)
+            if ((idLower.includes('indicator') || labelLower.includes('indicator')) && generatedContent.keyIndicators) {
+              return {
+                ...slot,
+                assignedContent: {
+                  id: generatedContent.keyIndicators.id,
+                  type: 'key-indicators' as const,
+                  title: 'Market Indicators',
+                  data: generatedContent.keyIndicators,
+                },
+              };
+            }
+
+            // Widget slot: Daily Sudoku (Page 8)
+            if ((idLower.includes('sudoku') || labelLower.includes('sudoku')) && generatedContent.sudoku) {
               return {
                 ...slot,
                 assignedContent: {
@@ -379,7 +410,9 @@ export const useAppStore = create<AppState>()(
                 },
               };
             }
-            if (slot.id.includes('horoscope') && generatedContent.horoscope) {
+
+            // Widget slot: Horoscope (Page 8)
+            if ((idLower.includes('horoscope') || labelLower.includes('horoscope')) && generatedContent.horoscope) {
               return {
                 ...slot,
                 assignedContent: {
@@ -390,7 +423,9 @@ export const useAppStore = create<AppState>()(
                 },
               };
             }
-            if (slot.id.includes('weather') && generatedContent.weather) {
+
+            // Widget slot: Weather Report (Page 8)
+            if ((idLower.includes('weather') || labelLower.includes('weather')) && generatedContent.weather) {
               return {
                 ...slot,
                 assignedContent: {
@@ -401,7 +436,9 @@ export const useAppStore = create<AppState>()(
                 },
               };
             }
-            if (slot.id.includes('facts') && generatedContent.facts) {
+
+            // Widget slot: Do You Know / Facts (Page 8)
+            if ((idLower.includes('fact') || labelLower.includes('fact') || labelLower.includes('know')) && generatedContent.facts) {
               return {
                 ...slot,
                 assignedContent: {
@@ -413,23 +450,59 @@ export const useAppStore = create<AppState>()(
               };
             }
 
+            // Widget slot: Cryptic Clue
+            if ((idLower.includes('cryptic') || labelLower.includes('cryptic')) && generatedContent.crypticClue) {
+              return {
+                ...slot,
+                assignedContent: {
+                  id: generatedContent.crypticClue.id,
+                  type: 'cryptic' as const,
+                  title: 'Cryptic Clue',
+                  data: generatedContent.crypticClue,
+                },
+              };
+            }
+
             // News article slots
             if (force || !slot.assignedContent) {
-              if (artIdx < allArticles.length) {
-                const block = allArticles[artIdx];
-                artIdx++;
-                return { ...slot, assignedContent: block };
+              // 1. First try matching preferred category from remaining pool
+              let matchIndex = pool.findIndex((item) => {
+                const itemCat = ((item.data as any)?.category || '').toLowerCase();
+                return preferredCats.some((pc) => itemCat.includes(pc));
+              });
+
+              // 2. If no category match, take next available article from pool
+              if (matchIndex === -1 && pool.length > 0) {
+                matchIndex = 0;
+              }
+
+              if (matchIndex !== -1) {
+                const [matchedArticle] = pool.splice(matchIndex, 1);
+                return { ...slot, assignedContent: matchedArticle };
+              }
+
+              // 3. If pool is exhausted but allArticles exists, recycle an article to prevent any empty void
+              if (allArticles.length > 0) {
+                const fallbackItem = allArticles[rawSlots.indexOf(slot) % allArticles.length];
+                return { ...slot, assignedContent: fallbackItem };
               }
             }
+
             return slot;
           });
+
+          // Use real generated briefs if available, otherwise fall back to category defaults
+          const briefsToUse = (generatedContent.briefs && generatedContent.briefs[cat])
+            ? generatedContent.briefs[cat]
+            : (Array.isArray(page?.briefs) && page.briefs.length > 0 ? page.briefs : (DEFAULT_BRIEFS_BY_CATEGORY[cat] || []));
+
           return {
             ...page,
             pageNumber: pNum,
             category: cat,
             categoryLabel: page?.categoryLabel || meta.label,
             categoryTagline: page?.categoryTagline || meta.tagline,
-            briefs: Array.isArray(page?.briefs) && page.briefs.length > 0 ? page.briefs : (DEFAULT_BRIEFS_BY_CATEGORY[cat] || []),
+            briefs: briefsToUse,
             slots: updatedSlots,
           };
         });

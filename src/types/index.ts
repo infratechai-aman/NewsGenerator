@@ -253,6 +253,7 @@ export interface GeneratedContent {
   weather: WeatherReport | null;
   tvGuide: TvGuide | null;
   keyIndicators: KeyIndicators | null;
+  briefs?: Record<string, BriefItem[]>;
 }
 
 export interface SavedNewspaper {

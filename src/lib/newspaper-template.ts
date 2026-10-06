@@ -525,13 +525,25 @@ function renderSudokuWidget(sudoku: SudokuPuzzle | null, theme: NewspaperTheme):
 }
 
 function renderWeatherWidget(weather: WeatherReport | null, theme: NewspaperTheme): string {
-  const forecast = [
+  const rep0 = weather?.reports?.[0] || null;
+  const currentCity = rep0?.city || weather?.city || 'REGIONAL MET REPORT';
+  const currentTemp = rep0?.temp || weather?.currentTemp || '28°C';
+  const currentIcon = rep0?.conditionIcon || weather?.currentIcon || '🌤️';
+  const currentCond = rep0?.condition || weather?.currentCondition || 'PARTLY CLOUDY';
+
+  const defaultForecast = [
     { day: 'TUE', icon: '🌤️', hi: '28°', lo: '21°' },
     { day: 'WED', icon: '🌧️', hi: '26°', lo: '20°' },
     { day: 'THU', icon: '⛈️', hi: '25°', lo: '19°' },
     { day: 'FRI', icon: '🌤️', hi: '27°', lo: '20°' },
     { day: 'SAT', icon: '☀️', hi: '28°', lo: '21°' },
   ];
+
+  const forecast = (weather?.forecast && weather.forecast.length > 0)
+    ? weather.forecast.map((f) => ({ day: f.day, icon: f.icon, hi: f.high, lo: f.low }))
+    : (weather?.reports && weather.reports.length > 1)
+    ? weather.reports.slice(0, 5).map((r) => ({ day: r.city.slice(0, 4).toUpperCase(), icon: r.conditionIcon, hi: r.temp, lo: r.condition }))
+    : defaultForecast;
 
   return `
     <div class="feature-card" style="border: 0.5pt solid ${theme.columnRuleColor};">
@@ -540,10 +552,10 @@ function renderWeatherWidget(weather: WeatherReport | null, theme: NewspaperThem
       </div>
       <div class="wx-main-row">
         <div class="wx-temp-col">
-          <span class="wx-huge-temp" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">28°C</span>
-          <span class="wx-city-name" style="font-family:${theme.uiFont}; color:${theme.inkColor};">PUNE &bull; PARTLY CLOUDY</span>
+          <span class="wx-huge-temp" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${currentTemp}</span>
+          <span class="wx-city-name" style="font-family:${theme.uiFont}; color:${theme.inkColor};">${currentCity.toUpperCase()} &bull; ${currentCond.toUpperCase()}</span>
         </div>
-        <div class="wx-icon-col">🌤️</div>
+        <div class="wx-icon-col">${currentIcon}</div>
       </div>
       <div class="wx-table" style="border-top: 0.5pt solid ${theme.columnRuleColor}; font-family:${theme.uiFont};">
         ${forecast.map((f) => `
@@ -559,8 +571,13 @@ function renderWeatherWidget(weather: WeatherReport | null, theme: NewspaperThem
   `;
 }
 
-function renderHoroscopeWidget(theme: NewspaperTheme): string {
-  const signs = [
+function renderHoroscopeWidget(horoscope: Horoscope | null, theme: NewspaperTheme): string {
+  const ZODIAC_SYMBOLS: Record<string, string> = {
+    aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋', leo: '♌', virgo: '♍',
+    libra: '♎', scorpio: '♏', sagittarius: '♐', capricorn: '♑', aquarius: '♒', pisces: '♓',
+  };
+
+  const defaultSigns = [
     { name: 'Aries', sym: '♈', text: 'Financial ventures gain momentum. Avoid impulsive decisions.' },
     { name: 'Taurus', sym: '♉', text: 'Cooperation with colleagues brings unexpected professional rewards.' },
     { name: 'Gemini', sym: '♊', text: 'Creative endeavors flourish today. Communications bring clarity.' },
@@ -568,6 +585,14 @@ function renderHoroscopeWidget(theme: NewspaperTheme): string {
     { name: 'Leo', sym: '♌', text: 'Leadership opportunities present themselves. Stand firm in your ideals.' },
     { name: 'Virgo', sym: '♍', text: 'Attention to detailed planning produces long-term structural success.' },
   ];
+
+  const signs = horoscope?.entries && horoscope.entries.length >= 6
+    ? horoscope.entries.slice(0, 6).map((e) => ({
+        name: e.sign,
+        sym: ZODIAC_SYMBOLS[e.sign.toLowerCase()] || '⭐',
+        text: e.prediction,
+      }))
+    : defaultSigns;
 
   return `
     <div class="feature-card" style="border: 0.5pt solid ${theme.columnRuleColor};">
@@ -1011,12 +1036,12 @@ function getDefaultCategoryArticles(category: string, pageNum: number, pubDate?:
     source: idx === 0 ? 'Special Correspondent' : 'Staff Reporter',
     date: pubDate,
     keyHighlights: idx === 0 ? [
-      'Landmark statutory and policy framework finalized',
-      'Unanimous stakeholder consensus reached across core bodies',
-      'Strategic capital commitments allocated for phased rollout',
-      'Pilot implementations commence across seven regional hubs',
+      'Key administrative review clears milestone execution framework',
+      'Inter-agency coordination taskforce deployed for regular field audits',
+      'Senior stakeholders deliberate on long-term infrastructure priorities',
+      'Phase-wise targets established with bi-weekly public status reporting',
     ] : undefined,
-    pullQuote: idx === 0 ? 'A foundational milestone that anchors long-term resilience and progress.' : undefined,
+    pullQuote: idx === 0 ? 'Disciplined institutional governance anchors lasting public progress.' : undefined,
   }));
 }
 
@@ -1040,25 +1065,37 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
     briefs: pageBriefs,
   };
 
-  // Extract filled content blocks
+  // Extract filled content blocks & widgets
   const articles: NewsArticle[] = [];
+  let pageKeyIndicators: KeyIndicators | null = null;
+  let pageWeather: WeatherReport | null = null;
+  let pageHoroscope: Horoscope | null = null;
+  let pageSudoku: SudokuPuzzle | null = null;
+
   page.slots.forEach((s) => {
-    if (s?.assignedContent && (s.assignedContent.type === 'article' || s.assignedContent.type === 'manual-article')) {
-      const data = s.assignedContent.data as any;
-      if (data) {
-        articles.push({
-          id: data.id || s.id,
-          headline: data.headline || s.assignedContent.title || 'Breaking News Update',
-          subHeadline: data.subHeadline || data.shortDescription,
-          content: data.content || '',
-          imageUrl: sanitizeImageUrl(data.imageUrl || data.images?.[0]?.url, data.category || page.category, data.headline || s.assignedContent.title),
-          imageCaption: data.imageCaption || data.caption,
-          category: data.category || page.category,
-          source: data.source || data.author || 'Staff Reporter',
-          date: data.date || pub.date,
-          keyHighlights: data.keyHighlights,
-          pullQuote: data.pullQuote,
-        });
+    if (s?.assignedContent) {
+      if (s.assignedContent.type === 'key-indicators') pageKeyIndicators = s.assignedContent.data as KeyIndicators;
+      if (s.assignedContent.type === 'weather') pageWeather = s.assignedContent.data as WeatherReport;
+      if (s.assignedContent.type === 'horoscope') pageHoroscope = s.assignedContent.data as Horoscope;
+      if (s.assignedContent.type === 'sudoku') pageSudoku = s.assignedContent.data as SudokuPuzzle;
+
+      if (s.assignedContent.type === 'article' || s.assignedContent.type === 'manual-article') {
+        const data = s.assignedContent.data as any;
+        if (data) {
+          articles.push({
+            id: data.id || s.id,
+            headline: data.headline || s.assignedContent.title || 'Breaking News Update',
+            subHeadline: data.subHeadline || data.shortDescription,
+            content: data.content || '',
+            imageUrl: sanitizeImageUrl(data.imageUrl || data.images?.[0]?.url, data.category || page.category, data.headline || s.assignedContent.title),
+            imageCaption: data.imageCaption || data.caption,
+            category: data.category || page.category,
+            source: data.source || data.author || 'Staff Reporter',
+            date: data.date || pub.date,
+            keyHighlights: data.keyHighlights,
+            pullQuote: data.pullQuote,
+          });
+        }
       }
     }
   });
@@ -1256,7 +1293,7 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
           </div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
           <div class="ih-col-side">
-            ${renderKeyIndicatorsWidget(null, theme)}
+            ${renderKeyIndicatorsWidget(pageKeyIndicators, theme)}
             <div style="margin-top: 4px;">
               ${renderSecondaryStory(articles[1], theme, pub.date, 'Page 4', { thumbHeight: '20mm', minWords: 40, headlineSize: '9.2pt', slotIndex: 1, usedImages: pageUsedImages })}
             </div>
@@ -1484,11 +1521,11 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
 
         <!-- Tier 2: 3 Feature Widgets Row (Horoscope + Sudoku + Weather) -->
         <div class="fp-secondary-grid" style="margin:2px 0 3px 0;">
-          <div class="fp-sec-col">${renderHoroscopeWidget(theme)}</div>
+          <div class="fp-sec-col">${renderHoroscopeWidget(pageHoroscope, theme)}</div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
-          <div class="fp-sec-col">${renderSudokuWidget(null, theme)}</div>
+          <div class="fp-sec-col">${renderSudokuWidget(pageSudoku, theme)}</div>
           <div class="col-divider" style="border-right:0.5pt solid ${theme.columnRuleColor};"></div>
-          <div class="fp-sec-col">${renderWeatherWidget(null, theme)}</div>
+          <div class="fp-sec-col">${renderWeatherWidget(pageWeather, theme)}</div>
         </div>
 
         <!-- Tier 3: Authentic Comics Strip -->

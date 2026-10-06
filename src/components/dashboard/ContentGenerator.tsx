@@ -173,6 +173,56 @@ export default function ContentGenerator() {
     }
   };
 
+  const runAutoPilot = async () => {
+    if (generationLocked || isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)) return;
+
+    setIsGenerating(true);
+    setGenerationLocked(true);
+    setCompletedItems(new Set());
+    setErrors(new Set());
+    setGlobalProgress(15);
+    setCurrentlyGeneratingName('Scraping real-time 7-day news syndicates (Google News RSS)...');
+
+    try {
+      setGlobalProgress(35);
+      setCurrentlyGeneratingName('Synthesizing authentic multi-category broadsheet articles with gpt-4o-mini...');
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'auto-pilot',
+          language: publication.language,
+          pageCount: publication.pageCount,
+          targetLocation: publication.targetLocation,
+          articleCount: publication.articleCount,
+        }),
+      });
+
+      setGlobalProgress(85);
+      setCurrentlyGeneratingName('Assembling puzzles, market tickers, real briefs, and documentary photography...');
+
+      const data = await res.json();
+
+      if (data.success && data.content) {
+        setGeneratedContent(data.content);
+        setCompletedItems(new Set(contentTypes.map((ct) => ct.id)));
+        setGlobalProgress(100);
+        setCurrentlyGeneratingName('AI Auto-Pilot complete! All pages 100% populated with 7-day news.');
+      } else {
+        throw new Error(data.error || 'Auto-Pilot generation failed');
+      }
+    } catch (err) {
+      console.error('Auto-Pilot error:', err);
+      setCurrentlyGeneratingName('Retrying in safe section-by-section mode...');
+      await generateAll();
+    } finally {
+      setIsGenerating(false);
+      setGenerationLocked(false);
+      setTimeout(() => setCurrentlyGeneratingName(''), 4000);
+    }
+  };
+
   const generateAll = async () => {
     if (generationLocked || isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)) return;
 
@@ -364,37 +414,39 @@ export default function ContentGenerator() {
           </div>
 
           {/* Primary Action Button */}
-          <Button
-            onClick={generateAll}
-            disabled={isGenerating || generationLocked || (hasUnsavedGeneration && !isNewspaperSaved)}
-            className={`font-bold text-xs h-11 px-6 rounded-xl shadow-md transition-all ${
-              isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)
-                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25 hover:scale-[1.01]'
-            }`}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Generating Broadsheet...
-              </>
-            ) : hasUnsavedGeneration && !isNewspaperSaved ? (
-              <>
-                <Lock className="h-4 w-4 mr-2" />
-                Save Current Edition First
-              </>
-            ) : isAllDone ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Regenerate All Sections
-              </>
-            ) : (
-              <>
-                <Wand2 className="h-4 w-4 mr-2" />
-                Generate Entire Newspaper
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              onClick={runAutoPilot}
+              disabled={isGenerating || generationLocked || (hasUnsavedGeneration && !isNewspaperSaved)}
+              className={`font-bold text-xs h-11 px-6 rounded-xl shadow-md transition-all ${
+                isGenerating || (hasUnsavedGeneration && !isNewspaperSaved)
+                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25 hover:scale-[1.01]'
+              }`}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Synthesizing 7-Day Edition...
+                </>
+              ) : hasUnsavedGeneration && !isNewspaperSaved ? (
+                <>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Save Current Edition First
+                </>
+              ) : isAllDone ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Re-Run AI Auto-Pilot (Fresh 7-Day News)
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Run AI Auto-Pilot (All Pages & Real 7-Day News)
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Content Type Grid */}
