@@ -394,7 +394,7 @@ function renderLeadStory(article: NewsArticle, theme: NewspaperTheme, pubDate?: 
       ` : ''}
 
       <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom: 0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-        BY ${(article.source || 'STAFF CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${(article.category || 'NATIONAL').toUpperCase()} &nbsp;|&nbsp; ${displayDate}
+        BY ${(article.source || 'STAFF CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${(article.category || 'NATIONAL').toUpperCase()} &nbsp;|&nbsp; ${article.publishedDate ? `PUB: ${article.publishedDate}` : displayDate}${article.isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED SOURCE</span>' : ''}
       </div>
 
       <!-- 3 Columns of Justified Newspaper Body Text -->
@@ -454,7 +454,7 @@ function renderSecondaryStory(
         </div>
       ` : ''}
       <div class="sec-byline" style="font-family:${theme.uiFont}; color:${theme.inkColor}; opacity:0.75;">
-        BY ${(article.source || 'STAFF REPORTER').toUpperCase()} &nbsp;|&nbsp; ${displayDate}
+        BY ${(article.source || 'STAFF REPORTER').toUpperCase()} &nbsp;|&nbsp; ${article.publishedDate ? `PUB: ${article.publishedDate}` : displayDate}${article.isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED</span>' : ''}
       </div>
       <p class="sec-body" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">
         ${snippet}
@@ -1094,6 +1094,12 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
             imageCaption: data.imageCaption || data.caption,
             category: data.category || page.category,
             source: data.source || data.author || 'Staff Reporter',
+            sourceUrl: data.sourceUrl,
+            publishedDate: data.publishedDate,
+            isVerified: data.isVerified,
+            verificationBadge: data.verificationBadge,
+            locationTag: data.locationTag,
+            originalOutlet: data.originalOutlet,
             date: data.date || pub.date,
             keyHighlights: data.keyHighlights,
             pullQuote: data.pullQuote,
@@ -1176,8 +1182,8 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
             <article class="inner-lead">
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
               ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
-              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-                BY ${(articles[0].source || 'SPECIAL CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${shortDate(pub.date)}
+              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.85;">
+                BY ${(articles[0].source || 'SPECIAL CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${articles[0].publishedDate ? `PUB: ${articles[0].publishedDate}` : shortDate(pub.date)}${articles[0].isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED SOURCE</span>' : ''}
               </div>
               <div class="ih-media">
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage(articles[0].category, 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
@@ -1229,8 +1235,8 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
             <article class="inner-lead">
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
               ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
-              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-                BY DIPLOMATIC CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
+              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.85;">
+                BY ${(articles[0].source || 'DIPLOMATIC CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${articles[0].publishedDate ? `PUB: ${articles[0].publishedDate}` : shortDate(pub.date)}${articles[0].isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED SOURCE</span>' : ''}
               </div>
               <div class="ih-media">
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, articles[0].category, articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage(articles[0].category, 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
@@ -1282,8 +1288,8 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
             <article class="inner-lead">
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
               ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
-              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-                BY FINANCIAL BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
+              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.85;">
+                BY ${(articles[0].source || 'FINANCIAL BUREAU').toUpperCase()} &nbsp;|&nbsp; ${articles[0].publishedDate ? `PUB: ${articles[0].publishedDate}` : shortDate(pub.date)}${articles[0].isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED SOURCE</span>' : ''}
               </div>
               <div class="ih-media">
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'business', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('business', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
@@ -1338,8 +1344,8 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
             <article class="inner-lead">
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
               ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
-              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-                BY SCIENCE CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
+              <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.85;">
+                BY ${(articles[0].source || 'SCIENCE CORRESPONDENT').toUpperCase()} &nbsp;|&nbsp; ${articles[0].publishedDate ? `PUB: ${articles[0].publishedDate}` : shortDate(pub.date)}${articles[0].isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED SOURCE</span>' : ''}
               </div>
               <div class="ih-media">
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('education-science', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
@@ -1392,7 +1398,7 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
               ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
               <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-                BY SPORTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
+                BY ${(articles[0].source || 'SPORTS BUREAU').toUpperCase()} &nbsp;|&nbsp; ${articles[0].publishedDate ? `PUB: ${articles[0].publishedDate}` : shortDate(pub.date)}${articles[0].isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED SOURCE</span>' : ''}
               </div>
               <div class="ih-media">
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('sports', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
@@ -1448,7 +1454,7 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
               <h2 class="inner-hl-main" style="font-family:${theme.headlineFont}; color:${theme.inkColor};">${articles[0].headline}</h2>
               ${articles[0].subHeadline ? `<div class="lead-subdeck" style="font-family:${theme.bodyFont}; color:${theme.inkColor};">${articles[0].subHeadline}</div>` : ''}
               <div class="art-byline" style="font-family:${theme.uiFont}; border-bottom:0.5pt solid ${theme.columnRuleColor}; color:${theme.inkColor}; opacity:0.8;">
-                BY CULTURE & ARTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
+                BY ${(articles[0].source || 'CULTURE & ARTS BUREAU').toUpperCase()} &nbsp;|&nbsp; ${articles[0].publishedDate ? `PUB: ${articles[0].publishedDate}` : shortDate(pub.date)}${articles[0].isVerified ? ' &nbsp;|&nbsp; <span style="color:#059669; font-weight:700;">✓ VERIFIED SOURCE</span>' : ''}
               </div>
               <div class="ih-media">
                 <img src="${sanitizeImageUrl(articles[0].imageUrl, 'entertainment', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('entertainment-lifestyle', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />

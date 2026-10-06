@@ -701,6 +701,38 @@ export default function PlannerPage() {
                       </div>
                     </div>
 
+                    {/* Trust & News Verification Badge */}
+                    {(block.data as any)?.source && (
+                      <div className="mt-2.5 p-2 rounded-xl bg-emerald-50/95 border border-emerald-300/80 shadow-2xs text-[10px] space-y-1">
+                        <div className="flex items-center justify-between font-bold">
+                          <span className="flex items-center gap-1 text-emerald-800 tracking-wide">
+                            <span className="text-emerald-600 font-black text-xs">✓</span> VERIFIED SOURCE
+                          </span>
+                          {(block.data as any)?.sourceUrl && (
+                            <a
+                              href={(block.data as any).sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-emerald-700 hover:text-emerald-950 font-bold underline flex items-center gap-0.5 text-[9.5px]"
+                            >
+                              Original article ↗
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between text-emerald-900/90 text-[9.5px]">
+                          <span>
+                            Source: <strong className="font-bold text-emerald-950">{(block.data as any).source}</strong>
+                          </span>
+                          {(block.data as any)?.publishedDate && (
+                            <span className="text-slate-600 font-semibold">
+                              Published: {(block.data as any).publishedDate}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Touch-Friendly Mobile Assign Button */}
                     <div className="mt-2.5 pt-2 border-t border-slate-200/50 flex items-center justify-between">
                       <span className="text-[10px] text-slate-500 font-medium">Drag or tap:</span>
@@ -848,6 +880,38 @@ export default function PlannerPage() {
                                   <p className="text-[8px] sm:text-[7.5px] text-slate-500 mt-1 line-clamp-2 sm:line-clamp-3 leading-snug font-serif">
                                     {(slot.assignedContent!.data as any).content}
                                   </p>
+                                )}
+
+                                {/* Verified Source Stamp in Canvas Slot */}
+                                {(slot.assignedContent!.data as any)?.source && (
+                                  <div className="mt-1.5 p-1 rounded-md bg-emerald-50/90 border border-emerald-200/90 text-[8px] sm:text-[7.5px] space-y-0.5">
+                                    <div className="flex items-center justify-between font-bold text-emerald-800">
+                                      <span className="flex items-center gap-0.5">
+                                        <span className="text-emerald-600 font-black">✓</span> VERIFIED SOURCE
+                                      </span>
+                                      {(slot.assignedContent!.data as any)?.sourceUrl && (
+                                        <a
+                                          href={(slot.assignedContent!.data as any).sourceUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="text-emerald-700 hover:text-emerald-950 underline font-semibold text-[7.5px]"
+                                        >
+                                          Original ↗
+                                        </a>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center justify-between text-emerald-900/80 truncate">
+                                      <span className="truncate">
+                                        Source: <strong className="font-semibold">{(slot.assignedContent!.data as any).source}</strong>
+                                      </span>
+                                      {(slot.assignedContent!.data as any)?.publishedDate && (
+                                        <span className="text-slate-500 ml-1 shrink-0">
+                                          {(slot.assignedContent!.data as any).publishedDate}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
                                 )}
                               </div>
                               <div className="flex items-center flex-shrink-0">

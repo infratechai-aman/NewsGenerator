@@ -363,20 +363,20 @@ export default function ContentGenerator() {
         </div>
       )}
 
-      {/* 3. TARGET LOCATION BAR */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gradient-to-r from-indigo-50/70 via-blue-50/60 to-slate-50 border border-indigo-200/80 p-4 rounded-3xl shadow-xs">
+      {/* 3. TARGET LOCATION BAR & NEWS VERIFICATION LAYER */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gradient-to-r from-indigo-50/70 via-blue-50/60 to-emerald-50/50 border border-indigo-200/80 p-4 rounded-3xl shadow-xs">
         <div className="flex items-center gap-3 flex-1">
           <div className="w-9 h-9 rounded-2xl bg-indigo-600 flex items-center justify-center flex-shrink-0 shadow-sm shadow-indigo-600/20">
             <MapPin className="h-4 w-4 text-white" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-indigo-950">Target Region / City Edition</span>
-              <span className="text-[10px] text-indigo-600 font-semibold">(Customizes real-time news & weather)</span>
+              <span className="text-xs font-bold text-indigo-950">Target Region / Micro-Location</span>
+              <span className="text-[10px] text-emerald-700 font-semibold">(Verified multi-source search: Google News + Municipal/PMC + Police)</span>
             </div>
             <input
               type="text"
-              placeholder="e.g. Pune, Mumbai, Bengaluru, Delhi (blank = National Edition)"
+              placeholder="e.g. Kondhwa, Pune, Mumbai, Bengaluru (blank = National Edition)"
               value={publication.targetLocation || ''}
               onChange={(e) => updatePublication({ targetLocation: e.target.value })}
               className="w-full bg-white border border-indigo-200/90 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
@@ -384,8 +384,9 @@ export default function ContentGenerator() {
             />
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-800 bg-white px-3.5 py-2 rounded-xl border border-indigo-100 shadow-2xs whitespace-nowrap self-start sm:self-auto">
-          <span>⚡ Live 7-Day Breaking Syndicate</span>
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-white px-3.5 py-2 rounded-xl border border-emerald-200 shadow-2xs whitespace-nowrap self-start sm:self-auto">
+          <span className="text-emerald-600 font-black">✓</span>
+          <span>News Verification Layer Active</span>
         </div>
       </div>
 

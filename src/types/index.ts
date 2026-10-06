@@ -103,6 +103,12 @@ export interface NewsArticle {
   imageCaption?: string | null;
   category: string;
   source: string;
+  sourceUrl?: string;
+  publishedDate?: string;
+  isVerified?: boolean;
+  verificationBadge?: string;
+  locationTag?: string;
+  originalOutlet?: string;
   date?: string;
   pullQuote?: string;
   keyHighlights?: string[];
