@@ -597,17 +597,51 @@ export const useAppStore = create<AppState>()(
       deleteSavedPaper: (id) =>
         set((s) => ({ repository: s.repository.filter((p) => p.id !== id) })),
 
-      loadSavedPaper: (saved: SavedNewspaper) =>
+      loadSavedPaper: (saved: SavedNewspaper) => {
+        const loadedContent = saved.content ? JSON.parse(JSON.stringify(saved.content)) : {};
+        const safeContent: GeneratedContent = {
+          articles: Array.isArray(loadedContent.articles) ? loadedContent.articles : [],
+          facts: loadedContent.facts || null,
+          horoscope: loadedContent.horoscope || null,
+          sudoku: loadedContent.sudoku || null,
+          crypticClue: loadedContent.crypticClue || null,
+          houseAds: Array.isArray(loadedContent.houseAds) ? loadedContent.houseAds : [],
+          quote: loadedContent.quote || null,
+          history: loadedContent.history || null,
+          weather: loadedContent.weather || null,
+          tvGuide: loadedContent.tvGuide || null,
+          keyIndicators: loadedContent.keyIndicators || DEFAULT_KEY_INDICATORS,
+          briefs: loadedContent.briefs || {},
+        };
+
+        const safePages: NewspaperPage[] = Array.isArray(saved.pages) && saved.pages.length > 0
+          ? saved.pages.map((p, idx) => {
+              const pNum = p?.pageNumber || idx + 1;
+              const cat = p?.category || (pNum === 1 ? 'front-page' : CATEGORY_ORDER[(pNum - 1) % CATEGORY_ORDER.length]);
+              const meta = CATEGORY_META[cat] || CATEGORY_META['politics'];
+              return {
+                ...p,
+                pageNumber: pNum,
+                category: cat,
+                categoryLabel: p?.categoryLabel || meta.label,
+                categoryTagline: p?.categoryTagline || meta.tagline,
+                briefs: Array.isArray(p?.briefs) && p.briefs.length > 0 ? p.briefs : (DEFAULT_BRIEFS_BY_CATEGORY[cat] || []),
+                slots: Array.isArray(p?.slots) && p.slots.length > 0 ? p.slots : slotsForCategory(pNum, cat),
+              };
+            })
+          : createDefaultPages(saved.config?.pageCount || 4);
+
         set({
-          publication: JSON.parse(JSON.stringify(saved.config)),
+          publication: JSON.parse(JSON.stringify(saved.config || {})),
           assets: JSON.parse(JSON.stringify(saved.assets || [])),
           manualArticles: JSON.parse(JSON.stringify(saved.manualArticles || [])),
-          generatedContent: JSON.parse(JSON.stringify(saved.content)),
-          pages: JSON.parse(JSON.stringify(saved.pages)),
+          generatedContent: safeContent,
+          pages: safePages,
           isNewspaperSaved: true,
           hasUnsavedGeneration: false,
           generationLocked: false,
-        }),
+        });
+      },
 
       clearSession: () =>
         set((s) => ({
@@ -670,21 +704,41 @@ export const useAppStore = create<AppState>()(
     {
       name: 'news-builder-storage',
       onRehydrateStorage: () => (state) => {
-        if (state && Array.isArray(state.pages)) {
-          state.pages = state.pages.map((p, idx) => {
-            const pNum = p?.pageNumber || idx + 1;
-            const cat = p?.category || (pNum === 1 ? 'front-page' : CATEGORY_ORDER[(pNum - 1) % CATEGORY_ORDER.length]);
-            const meta = CATEGORY_META[cat] || CATEGORY_META['politics'];
-            return {
-              ...p,
-              pageNumber: pNum,
-              category: cat,
-              categoryLabel: p?.categoryLabel || meta.label,
-              categoryTagline: p?.categoryTagline || meta.tagline,
-              briefs: Array.isArray(p?.briefs) && p.briefs.length > 0 ? p.briefs : (DEFAULT_BRIEFS_BY_CATEGORY[cat] || []),
-              slots: Array.isArray(p?.slots) && p.slots.length > 0 ? p.slots : slotsForCategory(pNum, cat),
+        if (state) {
+          if (!state.generatedContent) {
+            state.generatedContent = {
+              articles: [],
+              facts: null,
+              horoscope: null,
+              sudoku: null,
+              crypticClue: null,
+              houseAds: [],
+              quote: null,
+              history: null,
+              weather: null,
+              tvGuide: null,
+              keyIndicators: DEFAULT_KEY_INDICATORS,
             };
-          });
+          } else if (!state.generatedContent.keyIndicators) {
+            state.generatedContent.keyIndicators = DEFAULT_KEY_INDICATORS;
+          }
+
+          if (Array.isArray(state.pages)) {
+            state.pages = state.pages.map((p, idx) => {
+              const pNum = p?.pageNumber || idx + 1;
+              const cat = p?.category || (pNum === 1 ? 'front-page' : CATEGORY_ORDER[(pNum - 1) % CATEGORY_ORDER.length]);
+              const meta = CATEGORY_META[cat] || CATEGORY_META['politics'];
+              return {
+                ...p,
+                pageNumber: pNum,
+                category: cat,
+                categoryLabel: p?.categoryLabel || meta.label,
+                categoryTagline: p?.categoryTagline || meta.tagline,
+                briefs: Array.isArray(p?.briefs) && p.briefs.length > 0 ? p.briefs : (DEFAULT_BRIEFS_BY_CATEGORY[cat] || []),
+                slots: Array.isArray(p?.slots) && p.slots.length > 0 ? p.slots : slotsForCategory(pNum, cat),
+              };
+            });
+          }
         }
       },
     }

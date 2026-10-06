@@ -90,6 +90,7 @@ export interface ManualArticle {
   images: UploadedAsset[];
   author: string;
   date?: string;
+  category?: string;
 }
 
 export interface NewsArticle {

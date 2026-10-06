@@ -587,11 +587,14 @@ function renderHoroscopeWidget(horoscope: Horoscope | null, theme: NewspaperThem
   ];
 
   const signs = horoscope?.entries && horoscope.entries.length >= 6
-    ? horoscope.entries.slice(0, 6).map((e) => ({
-        name: e.sign,
-        sym: ZODIAC_SYMBOLS[e.sign.toLowerCase()] || '⭐',
-        text: e.prediction,
-      }))
+    ? horoscope.entries.slice(0, 6).map((e) => {
+        const signName = (e?.sign || (e as any)?.name || 'Aries').trim();
+        return {
+          name: signName,
+          sym: ZODIAC_SYMBOLS[signName.toLowerCase()] || '⭐',
+          text: e?.prediction || 'A favorable day for focus and thoughtful action.',
+        };
+      })
     : defaultSigns;
 
   return `
@@ -1339,7 +1342,7 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
                 BY SCIENCE CORRESPONDENT &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('education-science', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'education', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('education-science', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${eLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}
@@ -1392,7 +1395,7 @@ function renderPage(rawPage: NewspaperPage, pub: PublicationConfig, theme: Newsp
                 BY SPORTS BUREAU &nbsp;|&nbsp; ${shortDate(pub.date)}
               </div>
               <div class="ih-media">
-                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('sports', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1531415074868-036b10f01b08?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
+                <img src="${sanitizeImageUrl(articles[0].imageUrl, 'sports', articles[0].headline, 0, pageUsedImages) || getCategoryFallbackImage('sports', 0, pageUsedImages)}" class="inner-photo" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=1200&q=80';" style="border:0.5pt solid ${theme.inkColor};" />
               </div>
               <div class="inner-3col-body" style="column-rule:0.4pt solid ${theme.columnRuleColor}; font-family:${theme.bodyFont}; color:${theme.inkColor};">
                 ${sLead.map((p, idx) => `<p class="${idx === 0 ? 'first-paragraph' : ''}">${p}</p>`).join('')}

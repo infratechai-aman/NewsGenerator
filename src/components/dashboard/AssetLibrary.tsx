@@ -274,6 +274,7 @@ export default function AssetLibrary() {
       author: articleForm.author || 'Staff Reporter',
       images: articleForm.images,
       date: new Date().toISOString(),
+      category: articleForm.category || 'local',
     });
 
     setArticleForm({

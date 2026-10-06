@@ -240,14 +240,14 @@ export default function PlannerPage() {
 
   // Find which blocks are already assigned
   const assignedIds = new Set<string>();
-  pages.forEach((p) =>
-    p.slots.forEach((s) => {
-      if (s.assignedContent) assignedIds.add(s.assignedContent.id);
+  (pages || []).forEach((p) =>
+    (p.slots || []).forEach((s) => {
+      if (s?.assignedContent?.id) assignedIds.add(s.assignedContent.id);
     })
   );
 
   const unassignedBlocks = contentBlocks.filter((b) => !assignedIds.has(b.id));
-  const activePage = pages[activePageIdx];
+  const activePage = (pages && pages.length > 0) ? (pages[activePageIdx] || pages[0]) : null;
 
   const handleDragStart = (block: ContentBlock) => {
     setDraggedBlock(block);
@@ -792,7 +792,7 @@ export default function PlannerPage() {
 
                 {/* Slots grid: Proportionate, clean, and fully responsive */}
                 <div className="grid grid-cols-6 gap-2 sm:gap-3">
-                  {activePage?.slots.map((slot) => {
+                  {(activePage?.slots || []).map((slot) => {
                     const hasContent = slot.assignedContent !== null;
                     return (
                       <div
@@ -861,12 +861,14 @@ export default function PlannerPage() {
                                   </button>
                                 )}
                                 <button
-                                  onClick={() =>
-                                    removeContentFromSlot(
-                                      activePage.pageNumber,
-                                      slot.id
-                                    )
-                                  }
+                                  onClick={() => {
+                                    if (activePage) {
+                                      removeContentFromSlot(
+                                        activePage.pageNumber,
+                                        slot.id
+                                      );
+                                    }
+                                  }}
                                   className="p-1 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
                                   title="Remove from slot"
                                 >
@@ -906,13 +908,13 @@ export default function PlannerPage() {
                         className="px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide flex-shrink-0 rounded"
                         style={{ background: currentTheme.categoryHeaderBg, color: currentTheme.categoryHeaderText }}
                       >
-                        {activePage.categoryLabel.split('(')[0].trim().toUpperCase()} BRIEFS
+                        {(activePage?.categoryLabel || 'NEWS').split('(')[0].trim().toUpperCase()} BRIEFS
                       </span>
                       <div className="flex-1 flex items-center gap-2 overflow-hidden text-[7px] text-slate-600 truncate">
-                        {activePage.briefs.slice(0, 4).map((b, bi) => (
+                        {(activePage?.briefs || []).slice(0, 4).map((b, bi) => (
                           <span key={bi} className="truncate">
-                            <strong style={{ color: currentTheme.accentColor }}>{b.category}:</strong> {b.headline}
-                            {bi < Math.min(activePage.briefs.length, 4) - 1 && <span className="mx-1 text-slate-300">|</span>}
+                            <strong style={{ color: currentTheme.accentColor }}>{b?.category || 'NEWS'}:</strong> {b?.headline || ''}
+                            {bi < Math.min((activePage?.briefs || []).length, 4) - 1 && <span className="mx-1 text-slate-300">|</span>}
                           </span>
                         ))}
                       </div>
@@ -1031,13 +1033,13 @@ export default function PlannerPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-              {activePage?.slots.filter((s) => s.assignedContent === null).length === 0 ? (
+              {(activePage?.slots || []).filter((s) => s.assignedContent === null).length === 0 ? (
                 <div className="py-8 text-center">
                   <p className="text-xs text-slate-500 font-medium">All slots on this page are filled.</p>
                   <p className="text-[11px] text-slate-400 mt-1">Switch to another page tab at the top.</p>
                 </div>
               ) : (
-                activePage?.slots
+                (activePage?.slots || [])
                   .filter((s) => s.assignedContent === null)
                   .map((slot) => (
                     <div

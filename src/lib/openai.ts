@@ -45,7 +45,7 @@ function getSafeFallbackJson(userPrompt: string): string {
 
   if (p.includes('horoscope') || p.includes('zodiac')) {
     return JSON.stringify({
-      zodiacs: [
+      entries: [
         { sign: 'Aries', prediction: 'Dynamic energy supports decisive financial and career actions today.' },
         { sign: 'Taurus', prediction: 'Patience brings stability in professional negotiations and family affairs.' },
         { sign: 'Gemini', prediction: 'Creative breakthroughs open new avenues for collaboration and learning.' },
@@ -101,7 +101,7 @@ function getSafeFallbackJson(userPrompt: string): string {
     return JSON.stringify({
       clue: 'Press leader breaks quiet with official proclamation (8)',
       answer: 'BULLETIN',
-      explanation: 'B (leader of Breaks) + ULLET + IN = BULLETIN (official proclamation).',
+      hint: 'A gentle hint: Official public announcement',
     });
   }
 
@@ -109,15 +109,16 @@ function getSafeFallbackJson(userPrompt: string): string {
     return JSON.stringify({
       quote: 'The press is the greatest weapon for moral and intellectual development of a nation.',
       author: 'Mahatma Gandhi',
-      context: 'Young India, 1920',
     });
   }
 
   if (p.includes('history') || p.includes('this day')) {
     return JSON.stringify({
-      event: 'Historic Scientific Academy Formed to Expand National Research',
-      year: '1934',
-      details: 'Pioneering scholars gathered to inaugurate national research benchmarks across physical and engineering sciences.',
+      events: [
+        { year: '1934', event: 'Historic Scientific Academy Formed to Expand National Research' },
+        { year: '1952', event: 'First General Elections conclude successfully setting democratic benchmark' },
+        { year: '1984', event: 'National technological consortium inaugurated for indigenous computing' },
+      ],
     });
   }
 
@@ -158,10 +159,16 @@ export async function generateWithAI(
       max_tokens: 4000,
     });
 
-    const content = response.choices[0]?.message?.content?.trim();
+    let content = response.choices[0]?.message?.content?.trim();
     if (!content) {
       throw new Error('Empty response from OpenAI');
     }
+
+    // Strip markdown code fences if model enclosed JSON in ```json ... ```
+    if (content.startsWith('```')) {
+      content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    }
+
     return content;
   } catch (error) {
     console.warn('[OpenAI] API request fell through to resilient editorial engine:', error);

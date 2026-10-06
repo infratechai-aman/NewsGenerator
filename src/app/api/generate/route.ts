@@ -353,9 +353,10 @@ async function generateHoroscope(language: string) {
   );
 
   const parsed = JSON.parse(result);
+  const rawEntries = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed.zodiacs) ? parsed.zodiacs : []);
   return {
     id: uuidv4(),
-    entries: parsed.entries,
+    entries: rawEntries,
   };
 }
 

@@ -154,7 +154,8 @@ export default function ContentGenerator() {
       const data = await res.json();
 
       if (data.success) {
-        setGeneratedContent({ [typeId]: data.content });
+        const storeKey = typeId === 'cryptic' ? 'crypticClue' : typeId;
+        setGeneratedContent({ [storeKey]: data.content });
         setCompletedItems((prev) => new Set(prev).add(typeId));
         return true;
       } else {

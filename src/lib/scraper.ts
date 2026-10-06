@@ -135,8 +135,10 @@ export async function getNewsWithImages(
   targetLocation?: string
 ): Promise<{ news: NewsResult[]; images: ImageResult[] }> {
   // If target location is specified, ensure it is part of the query
-  let searchQuery = topic;
-  if (targetLocation && !topic.toLowerCase().includes(targetLocation.toLowerCase())) {
+  let searchQuery = topic || '';
+  const safeTopic = (topic || '').toLowerCase();
+  const safeLoc = (targetLocation || '').toLowerCase().trim();
+  if (safeLoc && !safeTopic.includes(safeLoc)) {
     searchQuery = `${targetLocation} ${topic}`;
   }
 
