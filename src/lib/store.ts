@@ -465,37 +465,18 @@ export const useAppStore = create<AppState>()(
 
             // News article slots
             if (force || !slot.assignedContent) {
-              // 1. First try matching preferred category from remaining pool
-              let matchIndex = pool.findIndex((item) => {
+              // 1. Strictly match preferred category from remaining pool
+              const matchIndex = pool.findIndex((item) => {
                 const itemCat = ((item.data as any)?.category || '').toLowerCase();
                 return preferredCats.some((pc) => itemCat.includes(pc));
               });
-
-              // 2. Strict category firewall: NEVER contaminate Politics or World with sports, crime, or local civic!
-              if (matchIndex === -1 && pool.length > 0) {
-                const STRICT_FORBIDDEN: Record<string, string[]> = {
-                  'politics': ['sports', 'crime', 'civic', 'local-crime', 'local-civic'],
-                  'international': ['sports', 'crime', 'civic', 'local-crime', 'local-civic'],
-                  'sports': ['politics', 'crime', 'civic', 'business', 'technology', 'world'],
-                  'business-tech': ['sports', 'crime'],
-                  'education-science': ['sports', 'crime'],
-                };
-                const forbidden = STRICT_FORBIDDEN[cat] || [];
-                const compatibleIndex = pool.findIndex((item) => {
-                  const itemCat = ((item.data as any)?.category || '').toLowerCase();
-                  return !forbidden.some((f) => itemCat.includes(f));
-                });
-                if (compatibleIndex !== -1) {
-                  matchIndex = compatibleIndex;
-                }
-              }
 
               if (matchIndex !== -1) {
                 const [matchedArticle] = pool.splice(matchIndex, 1);
                 return { ...slot, assignedContent: matchedArticle };
               }
 
-              // 3. If no compatible article exists in pool, leave unassigned so that the category-specific
+              // 2. If no category-matching article exists in pool, leave unassigned so that the category-specific
               // high-quality broadsheet fallback will render cleanly without category leakage!
               return { ...slot, assignedContent: null };
             }

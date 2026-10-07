@@ -192,7 +192,7 @@ export default function ContentGenerator() {
 
     let progressTimer: NodeJS.Timeout | null = null;
     const controller = new AbortController();
-    const abortTimeout = setTimeout(() => controller.abort(), 60000);
+    const abortTimeout = setTimeout(() => controller.abort(), 120000);
 
     try {
       // Smoothly advance progress indicator while backend models compute
